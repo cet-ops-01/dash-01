@@ -277,8 +277,6 @@
   .ml-row.colo .ml-dot{ background:var(--trueyellow); }
   .ml-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 </style>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -590,136 +588,100 @@ function renderList(){
 
 document.getElementById('search').addEventListener('input', e=>{ currentSearch = e.target.value; renderList(); renderSidebar(DATA); });
 
-const STATUS_COLORS = {
-  coreweave:'#2563EB', s101:'#16A34A', colo:'#EAB308',
-  rfi:'#DC2626', hold:'#EA580C'
-};
-const STATUS_LABELS = {
-  coreweave:'With CoreWeave', s101:'With Security 101',
-  colo:'With Colo', rfi:'RFI Outstanding', hold:'On Hold'
-};
+// Self-contained SVG map — no external dependencies
+const SITE_COLORS = {coreweave:'#2563EB',s101:'#16A34A',colo:'#EAB308',rfi:'#DC2626',hold:'#EA580C'};
+const SITE_LABELS = {coreweave:'With CoreWeave',s101:'With Security 101',colo:'With Colo',rfi:'RFI Outstanding',hold:'On Hold'};
 
-async function initMap(data){
+function initMap(data){
   const container = document.getElementById('siteMap');
   if(!container) return;
-  container.innerHTML = "";
+  container.innerHTML = '';
 
-  // Add hover popup div
-  const popup = document.createElement('div');
-  popup.className = 'map-popup';
-  popup.id = 'mapPopup';
-  container.appendChild(popup);
+  // Popup
+  const pop = document.createElement('div');
+  pop.className = 'map-popup'; pop.id = 'mapPopup';
+  container.appendChild(pop);
 
-  const W = container.offsetWidth || 900;
+  const W = container.offsetWidth || 880;
   const H = 340;
-
-  const svg = d3.select(container).append('svg')
-    .attr('width','100%').attr('height',H)
-    .style('display','block');
-
-  // Background
-  svg.append('rect').attr('width','100%').attr('height',H).attr('fill','#0D1118');
-
-  // Load US topojson
-  let topo;
-  try {
-    topo = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(r=>r.json());
-  } catch(e) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-faint);font-family:var(--mono);font-size:12px;">Map requires internet connection</div>';
-    return;
+  const ns = 'http://www.w3.org/2000/svg';
+  function mk(tag,attrs){
+    const el=document.createElementNS(ns,tag);
+    if(attrs) Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));
+    return el;
   }
 
-  const states = topojson.feature(topo, topo.objects.states);
-  const nation = topojson.mesh(topo, topo.objects.states, (a,b)=>a!==b);
+  const svg = mk('svg',{width:'100%',height:H,viewBox:`0 0 ${W} ${H}`});
+  svg.style.display='block';
+  container.appendChild(svg);
 
-  const projection = d3.geoAlbersUsa()
-    .fitSize([W, H - 10], states)
-    .translate([W/2, H/2]);
+  // Background
+  svg.appendChild(mk('rect',{width:W,height:H,fill:'#0D1118'}));
 
-  const path = d3.geoPath().projection(projection);
+  // Subtle dot grid
+  const defs=mk('defs');
+  const pat=mk('pattern',{id:'mapgrid',width:'28',height:'28',patternUnits:'userSpaceOnUse'});
+  const gc=mk('circle',{cx:'1',cy:'1',r:'0.7',fill:'#1A2540'});
+  pat.appendChild(gc); defs.appendChild(pat);
+  svg.appendChild(defs);
+  svg.appendChild(mk('rect',{width:W,height:H,fill:'url(#mapgrid)'}));
 
-  // State fills
-  svg.append('g').selectAll('path')
-    .data(states.features)
-    .join('path')
-    .attr('d', path)
-    .attr('fill','#151F35')
-    .attr('stroke','none');
+  // Simple equirectangular projection for continental US
+  function project(lat,lng){
+    const mn_lat=23.5,mx_lat=50.5,mn_lng=-127,mx_lng=-65;
+    const mg=0.07;
+    const x=mg*W+(lng-mn_lng)/(mx_lng-mn_lng)*W*(1-2*mg);
+    const y=mg*H+(1-(lat-mn_lat)/(mx_lat-mn_lat))*H*(1-2*mg);
+    return [Math.round(x),Math.round(y)];
+  }
 
-  // State borders
-  svg.append('path')
-    .datum(nation)
-    .attr('d', path)
-    .attr('fill','none')
-    .attr('stroke','#2A3A58')
-    .attr('stroke-width', 0.7);
+  // Apply fallback coords and filter
+  const sites = data.map(d=>{
+    if((!d.lat||!d.lng)&&FALLBACK_COORDS[d.site])
+      return {...d,lat:FALLBACK_COORDS[d.site][0],lng:FALLBACK_COORDS[d.site][1]};
+    return d;
+  }).filter(d=>d.lat&&d.lng);
 
-  // Sites
-  const validSites = data.filter(d => d.lat && d.lng);
-  validSites.forEach(d => {
-    const isRfi = (d.note||'').toLowerCase().includes('rfi');
-    const cls = d.owner==='hold'?'hold':isRfi?'rfi':d.owner==='s101'?'s101':d.owner==='colo'?'colo':'coreweave';
-    const color = STATUS_COLORS[cls];
-    const label = STATUS_LABELS[cls];
-    const coords = projection([d.lng, d.lat]);
-    if(!coords) return;
-    const [x, y] = coords;
+  sites.forEach(d=>{
+    const isRfi=(d.note||'').toLowerCase().includes('rfi');
+    const cls=d.owner==='hold'?'hold':isRfi?'rfi':d.owner==='s101'?'s101':d.owner==='colo'?'colo':'coreweave';
+    const color=SITE_COLORS[cls];
+    const label=SITE_LABELS[cls];
+    const [x,y]=project(d.lat,d.lng);
+    const g=mk('g',{transform:`translate(${x},${y})`,style:'cursor:pointer'});
 
-    const g = svg.append('g')
-      .attr('transform',`translate(${x},${y})`)
-      .style('cursor','pointer');
-
-    // Outer pulse ring
-    g.append('circle')
-      .attr('r', isRfi ? 14 : 10)
-      .attr('fill', color)
-      .attr('opacity', 0)
-      .attr('class','pulse-ring')
-      .style('animation', `svgPulse ${isRfi?'0.9':'2'}s ease-out infinite`);
+    // Pulse ring
+    const ring=mk('circle',{r:isRfi?'16':'12',fill:color,opacity:'0'});
+    ring.style.animation=`siteGlow ${isRfi?'0.85':'2.2'}s ease-out infinite`;
+    g.appendChild(ring);
 
     // Core dot
-    g.append('circle')
-      .attr('r', isRfi ? 6 : 5)
-      .attr('fill', color)
-      .attr('stroke','#0D1118')
-      .attr('stroke-width', 1.5)
-      .style('filter', `drop-shadow(0 0 ${isRfi?8:5}px ${color})`);
+    const dot=mk('circle',{r:isRfi?'7':'5',fill:color,stroke:'#0D1118','stroke-width':'1.5'});
+    dot.style.filter=`drop-shadow(0 0 ${isRfi?10:6}px ${color})`;
+    g.appendChild(dot);
 
-    // Interactions
-    g.on('mouseover', function(event) {
-      const pop = document.getElementById('mapPopup');
-      pop.innerHTML = `<div class="popup-site">${d.site}</div>
+    g.addEventListener('mouseenter',()=>{
+      pop.innerHTML=`<div class="popup-site">${d.site}</div>
         <div class="popup-colo">${d.colo||''}</div>
         <div class="popup-status" style="color:${color}">${label}</div>
         <div class="popup-pct">${d.pct}% complete</div>`;
-      const rect = container.getBoundingClientRect();
-      let left = x + 14;
-      let top = y - 20;
-      if(left + 180 > W) left = x - 194;
-      if(top < 0) top = y + 14;
-      pop.style.left = left + 'px';
-      pop.style.top = top + 'px';
-      pop.style.display = 'block';
-    }).on('mouseout', function() {
-      document.getElementById('mapPopup').style.display = 'none';
-    }).on('click', function() {
-      scrollToSite(d.site);
+      let left=x+16,top=y-30;
+      if(left+190>W) left=x-206;
+      if(top<0) top=y+16;
+      if(top+90>H) top=H-95;
+      pop.style.cssText=`display:block;left:${left}px;top:${top}px`;
     });
+    g.addEventListener('mouseleave',()=>{ pop.style.display='none'; });
+    g.addEventListener('click',()=>scrollToSite(d.site));
+    svg.appendChild(g);
   });
 
-  // Inject CSS animation for SVG pulse
-  if(!document.getElementById('svgPulseStyle')){
-    const style = document.createElement('style');
-    style.id = 'svgPulseStyle';
-    style.textContent = `
-      @keyframes svgPulse {
-        0% { r: 4; opacity: 0.8; }
-        80% { r: 18; opacity: 0; }
-        100% { r: 18; opacity: 0; }
-      }
-      .pulse-ring { transform-box: fill-box; transform-origin: center; }
-    `;
-    document.head.appendChild(style);
+  // Keyframe CSS (inject once)
+  if(!document.getElementById('siteGlowKF')){
+    const s=document.createElement('style');
+    s.id='siteGlowKF';
+    s.textContent='@keyframes siteGlow{0%{r:3;opacity:.9}75%{r:22;opacity:0}100%{r:22;opacity:0}}';
+    document.head.appendChild(s);
   }
 }
 
@@ -727,7 +689,7 @@ renderOwnerStrip();
 renderList();
 renderSidebar(DATA);
 renderColoFilters(DATA);
-setTimeout(()=>initMap(DATA), 150);
+initMap(DATA);
 
 const STAGE_HEADERS = ["ENG Proposal","Plans Received","ENG PO","Axis Cam Layout","CAD Done",
   "CAD Submitted (CW)","CAD Submitted (Colo)","Proposal","Proposal PO","Local Office Reviewed"];
@@ -817,7 +779,7 @@ async function fetchLiveData(){
     renderList();
     renderSidebar(DATA);
     renderColoFilters(DATA);
-    setTimeout(()=>initMap(DATA), 100);
+    initMap(DATA);
     setSourceStatus("live",new Date().toLocaleTimeString());
   } catch(err){
     console.warn("Sheets feed:",err);
