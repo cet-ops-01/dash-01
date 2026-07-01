@@ -185,7 +185,7 @@
     margin-bottom:24px; border-radius:14px; overflow:hidden;
     border:1px solid var(--line); position:relative;
   }
-  #siteMap{ height:310px; background:#0D1118; position:relative; overflow:hidden; }
+  #siteMap{ height:260px; background:#0A0E19; position:relative; overflow:hidden; }
   .map-section .map-title{
     position:absolute; top:14px; left:14px; z-index:1000;
     font-family:var(--mono); font-size:10px; letter-spacing:0.1em;
@@ -294,7 +294,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.1 &mdash; 2026-07-01</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.2</div>
       </div>
     </div>
     <div class="map-section">
@@ -592,8 +592,7 @@ document.getElementById('search').addEventListener('input', e=>{ currentSearch =
 const SITE_COLORS = {coreweave:'#2563EB',s101:'#16A34A',colo:'#EAB308',rfi:'#DC2626',hold:'#EA580C'};
 const SITE_LABELS = {coreweave:'With CoreWeave',s101:'With Security 101',colo:'With Colo',rfi:'RFI Outstanding',hold:'On Hold'};
 
-// Pre-computed pixel positions at viewBox 960x340 (equirectangular US projection)
-// These are fixed — no runtime math, no dependency on container size
+// Pre-computed pixel positions at viewBox 960x310
 const SITE_PX = {
   "US-ATL03":[642,207],"US-CHI01":[591,123],"US-DAL01":[462,217],
   "US-DEN01":[348,145],"Cage 0104":[352,148],"US-LAX01":[170,204],
@@ -602,6 +601,137 @@ const SITE_PX = {
   "US-DAL02":[465,220],"US-PDX01":[109,77],"US-QTS01":[350,147],
   "US-SEA02":[116,57],"US-PLZ03":[462,212],"US-RNE01":[457,214],
   "Alliance Building":[459,216],"US-HOU01":[481,248]
+};
+
+function initMap(data){
+  const container = document.getElementById('siteMap');
+  if(!container) return;
+  container.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+
+  const pop = document.createElement('div');
+  pop.className='map-popup'; pop.id='mapPopup';
+  container.appendChild(pop);
+
+  const svg = document.createElementNS(ns,'svg');
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height','260');
+  svg.setAttribute('viewBox','0 0 960 310');
+  svg.setAttribute('preserveAspectRatio','xMidYMin meet');
+  svg.style.cssText='display:block;width:100%;';
+  container.appendChild(svg);
+
+  function mk(tag,attrs){
+    const el=document.createElementNS(ns,tag);
+    if(attrs) Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));
+    return el;
+  }
+
+  // Background
+  svg.appendChild(mk('rect',{width:960,height:310,fill:'#0A0E19'}));
+
+  // State rectangles helper
+  function _sr(x,y,w,h,ab){
+    const r=mk('rect',{x,y,width:w,height:h,fill:'#111827',stroke:'#1E2A40','stroke-width':'0.6',rx:'1'});
+    svg.appendChild(r);
+    if(w>18&&h>12){
+      const t=mk('text',{'text-anchor':'middle','font-size':Math.min(9,w/ab.length*1.4),'font-family':'monospace',fill:'#2A3D5A',x:x+w/2,y:y+h/2+3});
+      t.textContent=ab; svg.appendChild(t);
+    }
+  }
+
+  // Draw all 48 states
+  _sr(77,34,112,40,'WA');
+  _sr(81,65,115,49,'OR');
+  _sr(83,113,145,108,'CA');
+  _sr(185,34,86,80,'ID');
+  _sr(146,113,83,80,'NV');
+  _sr(218,170,81,65,'AZ');
+  _sr(200,34,169,53,'MT');
+  _sr(270,79,97,47,'WY');
+  _sr(228,113,71,58,'UT');
+  _sr(297,125,99,46,'CO');
+  _sr(297,170,85,65,'NM');
+  _sr(367,34,105,35,'ND');
+  _sr(367,69,107,39,'SD');
+  _sr(367,102,123,34,'NE');
+  _sr(395,136,105,35,'KS');
+  _sr(382,170,120,39,'OK');
+  _sr(331,176,184,121,'TX');
+  _sr(463,29,108,67,'MN');
+  _sr(472,96,90,37,'IA');
+  _sr(483,129,93,52,'MO');
+  _sr(498,176,71,39,'AR');
+  _sr(506,215,74,47,'LA');
+  _sr(523,56,85,52,'WI');
+  _sr(543,108,55,63,'IL');
+  _sr(540,193,50,56,'MS');
+  _sr(585,193,50,56,'AL');
+  _sr(558,43,112,74,'MI');
+  _sr(590,116,46,45,'IN');
+  _sr(559,173,122,21,'TN');
+  _sr(625,193,67,52,'GA');
+  _sr(597,238,106,74,'FL');
+  _sr(636,110,60,44,'OH');
+  _sr(569,146,107,30,'KY');
+  _sr(656,190,68,37,'SC');
+  _sr(643,175,123,31,'NC');
+  _sr(665,129,70,39,'WV');
+  _sr(651,142,119,34,'VA');
+  _sr(696,110,81,29,'PA');
+  _sr(710,139,61,21,'MD');
+  _sr(761,138,12,16,'DE');
+  _sr(764,120,24,28,'NJ');
+  _sr(706,79,110,51,'NY');
+  _sr(791,112,26,13,'CT');
+  _sr(816,113,11,9,'RI');
+  _sr(794,103,50,19,'MA');
+  _sr(795,79,26,26,'VT');
+  _sr(806,76,27,29,'NH');
+  _sr(827,51,59,50,'ME');
+
+  // Build status lookup
+  const sMap={};
+  data.forEach(d=>{ if(d.site) sMap[d.site]=d; });
+
+  // Draw site dots
+  Object.entries(SITE_PX).forEach(([site,[x,y]])=>{
+    const d=sMap[site]||{owner:'coreweave',note:'',pct:0,colo:'TBD'};
+    const isRfi=(d.note||'').toLowerCase().includes('rfi');
+    const cls=d.owner==='hold'?'hold':isRfi?'rfi':d.owner==='s101'?'s101':d.owner==='colo'?'colo':'coreweave';
+    const color=SITE_COLORS[cls];
+    const label=SITE_LABELS[cls];
+    const r=isRfi?8:6;
+
+    const g=document.createElementNS(ns,'g');
+    g.setAttribute('transform',`translate(${x},${y})`);
+    g.style.cursor='pointer';
+
+    // Halo
+    const halo=mk('circle',{r:r+9,fill:color,opacity:'0.18'});
+    g.appendChild(halo);
+    // Core
+    const dot=mk('circle',{r,fill:color,stroke:'#0A0E19','stroke-width':'1.5',opacity:'1'});
+    g.appendChild(dot);
+
+    g.addEventListener('mouseenter',()=>{
+      const scX=(container.offsetWidth||960)/960;
+      const scY=(container.offsetHeight||260)/310;
+      pop.innerHTML=`<div class="popup-site">${site}</div>
+        <div class="popup-colo">${d.colo||''}</div>
+        <div class="popup-status" style="color:${color}">${label}</div>
+        <div class="popup-pct">${d.pct||0}% complete</div>`;
+      let left=x*scX+12, top=y*scY-35;
+      const cw=container.offsetWidth;
+      if(left+200>cw) left=x*scX-212;
+      if(top<0) top=y*scY+14;
+      if(top+90>260) top=200;
+      pop.style.cssText=`display:block;left:${left}px;top:${top}px`;
+    });
+    g.addEventListener('mouseleave',()=>{ pop.style.display='none'; });
+    g.addEventListener('click',()=>scrollToSite(site));
+    svg.appendChild(g);
+  });
 };
 
 function initMap(data){
