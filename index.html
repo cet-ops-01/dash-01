@@ -15,8 +15,11 @@
     --text-dim:#A8BAD0;
     --text-faint:#6882A0;
     --cyan:#3FD6C4;
-    --orange:#F97316;
-    --teal:#00E5CC;
+    --blue:#2563EB;
+    --truered:#DC2626;
+    --truegreen:#16A34A;
+    --trueyellow:#EAB308;
+    --trueorange:#EA580C;
     --amber:#F0C23C;
     --red:#E5604F;
     --green:#5BD17A;
@@ -102,15 +105,15 @@
   .ostat .num{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;}
   .ostat .lbl{font-size:10px;color:var(--text-dim);margin-top:7px;text-transform:uppercase;letter-spacing:0.05em;}
   .ostat.active::after{content:"FILTER ON";position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:8px;letter-spacing:0.08em;color:var(--text-dim);}
-  .ostat[data-owner="coreweave"]{border-top-color:var(--purple);} .ostat[data-owner="coreweave"] .num{color:var(--purple);}
-  .ostat[data-owner="s101"]{border-top-color:var(--orange);} .ostat[data-owner="s101"] .num{color:var(--orange);}
-  .ostat[data-owner="hold"]{border-top-color:var(--red);} .ostat[data-owner="hold"] .num{color:var(--red);}
+  .ostat[data-owner="coreweave"]{border-top-color:var(--blue);} .ostat[data-owner="coreweave"] .num{color:var(--blue);}
+  .ostat[data-owner="s101"]{border-top-color:var(--truegreen);} .ostat[data-owner="s101"] .num{color:var(--truegreen);}
+  .ostat[data-owner="hold"]{border-top-color:var(--trueorange);} .ostat[data-owner="hold"] .num{color:var(--trueorange);}
   .ostat[data-owner="po"]{border-top-color:var(--green);} .ostat[data-owner="po"] .num{color:var(--green);}
-  .ostat[data-owner="colo"]{border-top-color:var(--teal);} .ostat[data-owner="colo"] .num{color:var(--teal);}
-  .ostat[data-owner="rfi"]{border-top-color:var(--red);background:rgba(229,96,79,0.04);} .ostat[data-owner="rfi"] .num{color:var(--red);}
+  .ostat[data-owner="colo"]{border-top-color:var(--trueyellow);} .ostat[data-owner="colo"] .num{color:var(--trueyellow);}
+  .ostat[data-owner="rfi"]{border-top-color:var(--truered);background:rgba(220,38,38,0.08);} .ostat[data-owner="rfi"] .num{color:var(--truered);font-size:30px;}
   .ostat[data-owner="cancelled"]{border-top-color:var(--text-faint);} .ostat[data-owner="cancelled"] .num{color:var(--text-faint);}
 
-  .clear-filter{display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--orange);background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.3);border-radius:7px;padding:7px 12px;cursor:pointer;margin-bottom:14px;width:fit-content;}
+  .clear-filter{display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--truegreen);background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.3);border-radius:7px;padding:7px 12px;cursor:pointer;margin-bottom:14px;width:fit-content;}
   .clear-filter.show{display:flex;}
   .clear-filter:hover{background:rgba(63,214,196,0.14);}
 
@@ -135,10 +138,10 @@
   .cancelled-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 8px;border-radius:5px;color:var(--text-faint);background:rgba(124,141,166,0.08);border:1px solid rgba(124,141,166,0.25);margin-top:6px;}
   .ball-badge{font-family:var(--mono);font-size:11.5px;font-weight:700;padding:7px 13px;border-radius:8px;white-space:nowrap;text-align:right;letter-spacing:0.02em;}
   .ball-badge .tag{display:block;font-size:9px;font-weight:400;letter-spacing:0.1em;opacity:0.7;margin-bottom:2px;text-transform:uppercase;}
-  .ball-badge.coreweave{background:rgba(176,154,248,0.12);color:var(--purple);border:1px solid rgba(176,154,248,0.35);}
-  .ball-badge.s101{background:rgba(249,115,22,0.10);color:var(--orange);border:1px solid rgba(249,115,22,0.35);}
-  .ball-badge.hold{background:rgba(229,96,79,0.10);color:var(--red);border:1px solid rgba(229,96,79,0.35);}
-  .ball-badge.colo{background:rgba(0,229,204,0.10);color:var(--teal);border:1px solid rgba(0,229,204,0.35);}
+  .ball-badge.coreweave{background:rgba(37,99,235,0.12);color:var(--blue);border:1px solid rgba(37,99,235,0.4);}
+  .ball-badge.s101{background:rgba(22,163,74,0.10);color:var(--truegreen);border:1px solid rgba(22,163,74,0.4);}
+  .ball-badge.hold{background:rgba(234,88,12,0.10);color:var(--trueorange);border:1px solid rgba(234,88,12,0.4);}
+  .ball-badge.colo{background:rgba(234,179,8,0.12);color:var(--trueyellow);border:1px solid rgba(234,179,8,0.45);}
   .reason{font-size:13px;color:var(--text-dim);margin-bottom:14px;line-height:1.5;}
 
   /* PROPOSALS - simplified, no billing schedule */
@@ -159,10 +162,10 @@
   .swim-node{width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text-faint);}
   .swim-stop.past .swim-node{background:var(--panel-3);border-color:var(--text-faint);color:var(--text-dim);}
   .swim-stop.current .swim-node{border-width:3px;transform:scale(1.15);}
-  .swim-stop.current.coreweave .swim-node{border-color:var(--purple);background:var(--purple);color:var(--bg);box-shadow:0 0 0 4px rgba(176,154,248,0.18);}
-  .swim-stop.current.s101 .swim-node{border-color:var(--orange);background:var(--orange);color:var(--bg);box-shadow:0 0 0 4px rgba(249,115,22,0.18);}
+  .swim-stop.current.coreweave .swim-node{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,0.25);}
+  .swim-stop.current.s101 .swim-node{border-color:var(--truegreen);background:var(--truegreen);color:#fff;box-shadow:0 0 0 4px rgba(22,163,74,0.25);}
   .swim-stop.current.decision .swim-node{border-color:var(--amber);background:var(--amber);color:var(--bg);box-shadow:0 0 0 4px rgba(240,194,60,0.18);border-radius:6px;}
-  .swim-stop.current.colo .swim-node{border-color:var(--teal);background:var(--teal);color:var(--bg);box-shadow:0 0 0 4px rgba(0,229,204,0.18);}
+  .swim-stop.current.colo .swim-node{border-color:var(--trueyellow);background:var(--trueyellow);color:#000;box-shadow:0 0 0 4px rgba(234,179,8,0.25);}
   .swim-label{font-family:var(--mono);font-size:9.5px;color:var(--text-faint);text-align:center;line-height:1.3;}
   .swim-stop.current .swim-label{color:var(--text);font-weight:700;}
   .swim-stop.past .swim-label{color:var(--text-dim);}
@@ -195,25 +198,27 @@
     display:inline-flex; align-items:center; gap:6px;
     font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:0.1em;
     text-transform:uppercase; padding:5px 10px; border-radius:6px; margin-bottom:12px;
-    color:var(--red); background:rgba(229,96,79,0.10); border:1px solid rgba(229,96,79,0.4);
+    color:#fff; background:var(--truered); border:1px solid var(--truered);
     animation:rfi-pulse 1.6s ease-in-out infinite;
   }
   .rfi-badge .rfi-dot{
-    width:7px; height:7px; border-radius:50%; background:var(--red);
+    width:7px; height:7px; border-radius:50%; background:#fff;
     animation:rfi-dot-pulse 1.6s ease-in-out infinite;
   }
   @keyframes rfi-pulse{
     0%,100%{ box-shadow:0 0 0 0 rgba(229,96,79,0); }
-    50%{ box-shadow:0 0 0 4px rgba(229,96,79,0.2); }
+    0%{ box-shadow:0 0 0 0 rgba(220,38,38,0.8); }
+    40%{ box-shadow:0 0 0 8px rgba(220,38,38,0.0); }
+    100%{ box-shadow:0 0 0 0 rgba(220,38,38,0); }
   }
   @keyframes rfi-dot-pulse{
     0%,100%{ opacity:1; }
     50%{ opacity:0.3; }
   }
   /* Faster map pulse for RFI sites */
-  .site-marker.rfi{ background:rgba(229,96,79,0.3); }
-  .site-marker.rfi::before{ box-shadow:0 0 0 0 rgba(229,96,79,0.9); animation-duration:0.9s !important; }
-  .site-marker.rfi::after{ background:var(--red); box-shadow:0 0 12px 3px rgba(229,96,79,1); }
+  .site-marker.rfi{ background:rgba(220,38,38,0.4); }
+  .site-marker.rfi::before{ box-shadow:0 0 0 0 rgba(220,38,38,1); animation-duration:0.7s !important; }
+  .site-marker.rfi::after{ background:var(--truered); box-shadow:0 0 16px 5px rgba(220,38,38,1); }
 
   /* Leaflet overrides */
   .leaflet-container{ background:#0D1118 !important; font-family:var(--sans); }
@@ -227,9 +232,9 @@
   .popup-site{ font-family:var(--mono); font-weight:700; font-size:13px; margin-bottom:4px; }
   .popup-colo{ font-size:11px; color:var(--text-dim); margin-bottom:4px; }
   .popup-status{ font-size:11px; font-family:var(--mono); }
-  .popup-status.coreweave{ color:var(--purple); }
-  .popup-status.s101{ color:var(--orange); }
-  .popup-status.colo{ color:var(--teal); }
+  .popup-status.coreweave{ color:var(--blue); }
+  .popup-status.s101{ color:var(--truegreen); }
+  .popup-status.colo{ color:var(--trueyellow); }
   .popup-status.hold{ color:var(--red); }
   .popup-pct{ font-family:var(--mono); font-size:10px; color:var(--text-faint); margin-top:4px; }
 
@@ -249,15 +254,15 @@
     top:50%; left:50%; transform:translate(-50%,-50%);
     width:6px; height:6px; border-radius:50%;
   }
-  .site-marker.coreweave{ background:rgba(176,154,248,0.3); }
-  .site-marker.coreweave::before{ box-shadow:0 0 0 0 rgba(176,154,248,0.7); }
-  .site-marker.coreweave::after{ background:var(--purple); box-shadow:0 0 8px 2px rgba(176,154,248,0.8); }
-  .site-marker.s101{ background:rgba(249,115,22,0.3); }
-  .site-marker.s101::before{ box-shadow:0 0 0 0 rgba(249,115,22,0.7); animation-delay:0.3s; }
-  .site-marker.s101::after{ background:var(--orange); box-shadow:0 0 8px 2px rgba(249,115,22,0.8); }
-  .site-marker.colo{ background:rgba(0,229,204,0.3); }
-  .site-marker.colo::before{ box-shadow:0 0 0 0 rgba(0,229,204,0.7); animation-delay:0.9s; }
-  .site-marker.colo::after{ background:var(--teal); box-shadow:0 0 8px 2px rgba(0,229,204,0.8); }
+  .site-marker.coreweave{ background:rgba(37,99,235,0.3); }
+  .site-marker.coreweave::before{ box-shadow:0 0 0 0 rgba(37,99,235,0.8); }
+  .site-marker.coreweave::after{ background:var(--blue); box-shadow:0 0 10px 3px rgba(37,99,235,0.9); }
+  .site-marker.s101{ background:rgba(22,163,74,0.3); }
+  .site-marker.s101::before{ box-shadow:0 0 0 0 rgba(22,163,74,0.8); animation-delay:0.3s; }
+  .site-marker.s101::after{ background:var(--truegreen); box-shadow:0 0 10px 3px rgba(22,163,74,0.9); }
+  .site-marker.colo{ background:rgba(234,179,8,0.3); }
+  .site-marker.colo::before{ box-shadow:0 0 0 0 rgba(234,179,8,0.8); animation-delay:0.9s; }
+  .site-marker.colo::after{ background:var(--trueyellow); box-shadow:0 0 10px 3px rgba(234,179,8,0.9); }
   .site-marker.hold{ background:rgba(229,96,79,0.3); }
   .site-marker.hold::before{ box-shadow:0 0 0 0 rgba(229,96,79,0.7); animation-delay:0.6s; }
   .site-marker.hold::after{ background:var(--red); box-shadow:0 0 8px 2px rgba(229,96,79,0.8); }
@@ -275,7 +280,7 @@
   }
   .ml-row{ display:flex; align-items:center; gap:7px; color:var(--text-dim); margin-bottom:5px; }
   .ml-row:last-child{ margin-bottom:0; }
-  .ml-row.colo .ml-dot{ background:var(--teal); }
+  .ml-row.colo .ml-dot{ background:var(--trueyellow); }
   .ml-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -297,18 +302,18 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--purple);border-color:rgba(176,154,248,0.4);background:rgba(176,154,248,0.07);">v4.1 &mdash; 2026-07-01</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.1 &mdash; 2026-07-01</div>
       </div>
     </div>
     <div class="map-section">
       <div class="map-title">&#9679; CoreWeave POP sites &mdash; live status</div>
       <div id="siteMap"></div>
       <div class="map-legend-float">
-        <div class="ml-row"><div class="ml-dot" style="background:var(--purple)"></div>With CoreWeave</div>
-        <div class="ml-row"><div class="ml-dot" style="background:var(--orange)"></div>With Security 101</div>
-        <div class="ml-row"><div class="ml-dot" style="background:var(--teal)"></div>With Colo</div>
-        <div class="ml-row"><div class="ml-dot" style="background:var(--red)"></div>RFI Outstanding</div>
-        <div class="ml-row"><div class="ml-dot" style="background:rgba(229,96,79,0.5)"></div>On hold</div>
+        <div class="ml-row"><div class="ml-dot" style="background:var(--blue)"></div>With CoreWeave</div>
+        <div class="ml-row"><div class="ml-dot" style="background:var(--truegreen)"></div>With Security 101</div>
+        <div class="ml-row"><div class="ml-dot" style="background:var(--trueyellow)"></div>With Colo</div>
+        <div class="ml-row"><div class="ml-dot" style="background:var(--trueorange)"></div>RFI Outstanding</div>
+        <div class="ml-row"><div class="ml-dot" style="background:var(--trueorange)"></div>On hold</div>
       </div>
     </div>
     <div class="owner-strip" id="ownerStrip"></div>
@@ -319,11 +324,11 @@
       <div class="colo-buttons" id="coloFilters"></div>
     </div>
     <div class="legend">
-      <span><span class="dot" style="background:var(--purple)"></span>With CoreWeave</span>
-      <span><span class="dot" style="background:var(--orange)"></span>With Security 101</span>
-      <span><span class="dot" style="background:var(--teal)"></span>With Colo</span>
+      <span><span class="dot" style="background:var(--blue)"></span>With CoreWeave</span>
+      <span><span class="dot" style="background:var(--truegreen)"></span>With Security 101</span>
+      <span><span class="dot" style="background:var(--trueyellow)"></span>With Colo</span>
       <span><span class="dot" style="background:var(--amber)"></span>Decision point</span>
-      <span><span class="dot" style="background:var(--red)"></span>On hold</span>
+      <span><span class="dot" style="background:var(--trueorange)"></span>On hold</span>
     </div>
     <input type="text" id="search" class="search" placeholder="Search site, city, or site code&hellip;">
     <div class="list" id="list"></div>
@@ -351,44 +356,28 @@ const STAGE_ABBR = ["ENG\nProp","Plans\nRecv","ENG\nPO","Axis\nCam","CAD\nDone",
 
 // type: only filled in where the source data explicitly states a space type (e.g. "Cage").
 // Everywhere else it is left TBD rather than guessed, per sourcing rules.
-// Milestone status options: "Pending" | "Invoiced" | "Paid"
-// cancelled: true removes from active counts, shows Cancelled badge
-const RAW = [
-  {site:"US-ATL03", city:"Atlanta", state:"GA", code:"ATL03", type:"TBD", loc:"180 Peachtree St, Atlanta, GA 30303, USA", eng:"301881", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI", colo:"Equinix", lat:33.7557, lng:-84.3873, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-CHI01", city:"Chicago", state:"IL", code:"CHI01", type:"TBD", loc:"350 E Cermak Rd, Chicago, IL 60616, USA", eng:"301885", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI", colo:"Digital Realty", lat:41.8504, lng:-87.627, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-DAL01", city:"Dallas", state:"TX", code:"DAL01", type:"TBD", loc:"1990 N Stemmons Fwy, Dallas, TX 75207, USA", eng:"302561", po:"", engPoIssued:false, instPoIssued:false, vals:[10,10,0,0,0,0,0,0,0,0], note:"On hold", holdReason:"CoreWeave has this site on hold &mdash; we're waiting for the previous integrator to exit before we can even access the site. No drawings exist yet. An engineering proposal will be queued once site access opens up.", colo:"Equinix", lat:32.7897, lng:-96.8048, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-DEN01", city:"Denver", state:"CO", code:"DEN01", type:"TBD", loc:"910 15th St, Denver, CO 80202, USA", eng:"301887", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"CoreSite", lat:39.7416, lng:-104.9873, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"Cage 0104", city:"Denver", state:"CO", code:"0104", type:"CAGE", loc:"910 15th St, Denver, CO 80202, USA", eng:"301888", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"CoreSite", lat:39.742, lng:-104.9868, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-LAX01", city:"Los Angeles", state:"CA", code:"LAX01", type:"TBD", loc:"624 S Grand Ave, Los Angeles, CA 90017, USA", eng:"301891", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"CoreSite", lat:34.0504, lng:-118.2536, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-PHL01", city:"Philadelphia", state:"PA", code:"PHL01", type:"TBD", loc:"401 N Broad St, Philadelphia, PA 19108, USA", eng:"298526", po:"286822", engPoIssued:true, instPoIssued:true, vals:[10,10,10,10,10,10,5,10,10,0], note:"Waiting for Colo approval", colo:"Netrality", lat:39.9551, lng:-75.1567, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-QAS01", city:"Ashburn", state:"VA", code:"QAS01", type:"TBD", loc:"21715 Filigree Ct, Ashburn, VA 20147, USA", eng:"301893", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"Equinix", lat:39.0398, lng:-77.4879, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-SEA01", city:"Seattle", state:"WA", code:"SEA01", type:"TBD", loc:"2001 6th Ave #300, Seattle, WA 98121, USA", eng:"302636", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"Westin Building Exchange", lat:47.6167, lng:-122.342, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-SJC01", city:"San Jose", state:"CA", code:"SJC01", type:"TBD", loc:"11 Great Oaks Blvd, San Jose, CA 95119, USA", eng:"302565", po:"", engPoIssued:false, instPoIssued:false, vals:[10,10,0,5,5,0,0,0,0,0], note:"Need to map out cameras", colo:"Equinix", lat:37.2521, lng:-121.8312, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-UYK01", city:"Secaucus", state:"NJ", code:"UYK01", type:"TBD", loc:"105 Enterprise Ave S, Secaucus, NJ 07094, USA", eng:"302568", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI", colo:"Equinix", lat:40.7904, lng:-74.0585, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-CHI02", city:"Chicago", state:"IL", code:"CHI02", type:"TBD", loc:"350 E Cermak Road, Suite 355, Chicago, IL 60616, USA", eng:"302638", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI", colo:"Digital Realty", lat:41.8503, lng:-87.6276, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-DAL02", city:"Dallas", state:"TX", code:"DAL02", type:"TBD", loc:"1990 N Stemmons Fwy, Dallas, TX 75207, USA", eng:"301877", po:"286824.1", engPoIssued:false, instPoIssued:true, vals:[10,10,0,10,10,0,0,10,10,0], note:"Need PO, need to send 1st draft", colo:"Equinix", lat:32.79, lng:-96.8058, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-PDX01", city:"Portland", state:"OR", code:"PDX01", type:"TBD", loc:"921 SW Washington St, Portland, OR 97205, USA", eng:"302571", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"Digital Realty", lat:45.5235, lng:-122.6759, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-QTS01", city:"Englewood", state:"CO", code:"QTS01", type:"TBD", loc:"335 Inverness Dr S, Englewood, CO 80112, USA", eng:"302584", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"Equinix", lat:39.5903, lng:-104.8722, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-SEA02", city:"Seattle", state:"WA", code:"SEA02", type:"TBD", loc:"2001 6th Ave #350, Seattle, WA 98121, USA", eng:"302637", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"Westin Building Exchange", lat:47.6162, lng:-122.3425, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-PLZ03", city:"Plano", state:"TX", code:"PLZ03", type:"TBD", loc:"8375 Dominion Pkwy, Plano, TX 75024, USA", eng:"302586", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"DataBank", lat:33.1584, lng:-96.8246, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-RNE01", city:"Roanoke", state:"TX", code:"RNE01", type:"TBD", loc:"13600 Haslet Roanoke Rd, Roanoke, TX 76262, USA", eng:"302589", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"TBD", lat:33.0087, lng:-97.2214, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"Alliance Building", city:"Roanoke", state:"TX", code:"", type:"TBD", loc:"13600 Haslet Roanoke Rd, Roanoke, TX 76262, USA", eng:"302595", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"TBD", lat:33.0083, lng:-97.2222, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]},
-  {site:"US-HOU01", city:"Houston", state:"TX", code:"HOU01", type:"TBD", loc:"660 Greens Pkwy, Houston, TX, USA", eng:"302599", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans", colo:"Switch", lat:29.9978, lng:-95.4113, cancelled:false, engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}], instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]}
-];
+// ALL DATA comes from the Google Sheet — nothing hardcoded here
+const RAW = [];
 
 function deriveOwner(d){
-  const n = (d.note||"").toLowerCase();
+  const n = (d.note||d.holdReason||"").toLowerCase();
+
+  // On hold always wins regardless of PO status
   if(n.includes("on hold"))
     return {owner:"hold", swimIdx:-1, label:"On hold", reason: d.holdReason || d.note || "This project is on hold pending an internal decision before work resumes."};
-  if(n.includes("no plans") || n.includes("rfi"))
-    return {owner:"coreweave", swimIdx:0, label:"With CoreWeave", reason:"Waiting on CoreWeave to provide a CAD or clear PDF of the floor plan before we can start the layout."};
-  if(n.includes("waiting for colo"))
+
+  // Colo approval — only reachable if eng PO was issued and CAD submitted
+  if(n.includes("waiting for colo") || n.includes("colo approval"))
     return {owner:"colo", swimIdx:2, label:"With Colo", reason:"CAD layout and coverage plan are submitted to the colo facility, awaiting their sign-off on mounting and placement."};
-  if(n.includes("map out cameras"))
-    return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"Plans are in hand. We're actively laying out camera and device positions on the drawing."};
-  if(n.includes("need po") || n.includes("1st draft"))
-    return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"We need to send the first proposal draft; a CoreWeave PO is also still pending on this site."};
-  return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"In progress with our engineering team."};
+
+  // GATE: Security 101 cannot be assigned unless an engineering PO has been issued
+  // If no eng PO, site stays With CoreWeave regardless of note content
+  if(d.engPoIssued){
+    return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"Engineering PO issued. Our team is actively building the CAD layout and coverage design."};
+  }
+
+  // Everything else — no eng PO — stays With CoreWeave
+  return {owner:"coreweave", swimIdx:0, label:"With CoreWeave", reason:"Waiting on CoreWeave to issue an engineering PO before we can begin the layout and design work."};
 }
 
 function buildData(raw){
@@ -400,6 +389,9 @@ function buildData(raw){
 }
 
 let DATA = buildData(RAW);
+
+// Show loading state immediately since all data comes from the sheet
+document.getElementById('list').innerHTML = `<div style="padding:60px;text-align:center;color:var(--text-faint);font-family:var(--mono);font-size:13px;">Loading site data from Google Sheets&hellip;</div>`;
 
 const STAT_DEFS = [
   {key:"coreweave", label:"With CoreWeave", filter:d=>d.owner==="coreweave" && !d.cancelled},
@@ -692,6 +684,8 @@ function rowToRaw(f){
     holdReason: String(f["Notes / Hold Reason"]||""),
     cancelled: String(f["Cancelled"]||"").toLowerCase()==="yes",
     colo: String(f["Colo"]||f["Colo Provider"]||"TBD"),
+    lat: parseFloat(f["Lat"]||f["Latitude"]||"0")||0,
+    lng: parseFloat(f["Lng"]||f["Longitude"]||"0")||0,
     engM: getMil("Eng"),
     instM: getMil("Inst"),
   };
