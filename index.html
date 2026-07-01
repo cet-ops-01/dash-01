@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoreWeave POP &middot; Status Tracker</title>
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#111722;
+    --panel-2:#161E2C;
+    --line:#23303F;
+    --text:#E7ECF3;
+    --text-dim:#8C9BB0;
+    --text-faint:#5A6B80;
+    --cyan:#3FD6C4;
+    --amber:#F0C23C;
+    --red:#E5604F;
+    --green:#5BD17A;
+    --purple:#A586F0;
+    --slate:#7C8DA6;
+    --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(63,214,196,0.06), transparent),
+      radial-gradient(900px 500px at 100% 0%, rgba(165,134,240,0.05), transparent),
+      var(--bg);
+    color:var(--text); font-family:var(--sans);
+    min-height:100vh; padding:32px 28px 80px;
+  }
+  @media (max-width:640px){ body{padding:20px 14px 60px;} }
+
+  .hdr{
+    border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:22px;
+  }
+  .hdr .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.18em; color:var(--purple);
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .hdr h1{ font-size:25px; font-weight:600; letter-spacing:-0.01em; }
+  .hdr .sub{ color:var(--text-dim); font-size:13.5px; margin-top:4px; max-width:680px; }
+  .source-status{
+    display:inline-block; margin-top:12px; font-family:var(--mono); font-size:10.5px;
+    color:var(--text-faint); padding:4px 10px; border-radius:6px; border:1px solid var(--line);
+  }
+  .source-status.live{ color:var(--green); border-color:rgba(91,209,122,0.4); background:rgba(91,209,122,0.07); }
+  .source-status.error{ color:var(--amber); border-color:rgba(240,194,60,0.4); background:rgba(240,194,60,0.07); }
+
+  /* ---------------- toggle ---------------- */
+  .toggle-row{ display:flex; justify-content:flex-end; margin-bottom:14px; }
+  .toggle{ display:flex; background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:3px; }
+  .toggle button{
+    border:none; background:transparent; color:var(--text-dim); padding:8px 16px; border-radius:7px;
+    cursor:pointer; font-family:var(--mono); font-size:12px; transition:all .15s ease;
+  }
+  .toggle button.active{ background:var(--cyan); color:var(--bg); font-weight:700; }
+
+  /* ---------------- owner strip ---------------- */
+  .owner-strip{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    margin-bottom:18px;
+  }
+  @media (max-width:640px){ .owner-strip{ grid-template-columns:repeat(2,1fr); } }
+  .ostat{
+    background:var(--panel); padding:16px 16px; cursor:pointer; position:relative;
+    transition:background .15s ease; border-top:3px solid transparent;
+  }
+  .ostat:hover{ background:var(--panel-2); }
+  .ostat.active{ background:var(--panel-2); }
+  .ostat .num{ font-family:var(--mono); font-size:24px; font-weight:700; line-height:1; }
+  .ostat .lbl{ font-size:11px; color:var(--text-dim); margin-top:7px; text-transform:uppercase; letter-spacing:0.05em; }
+  .ostat.active::after{
+    content:"FILTER ON"; position:absolute; top:8px; right:10px;
+    font-family:var(--mono); font-size:8px; letter-spacing:0.08em; color:var(--text-dim);
+  }
+  .ostat[data-owner="coreweave"]{ border-top-color:var(--purple); } .ostat[data-owner="coreweave"] .num{ color:var(--purple); }
+  .ostat[data-owner="s101"]{ border-top-color:var(--cyan); } .ostat[data-owner="s101"] .num{ color:var(--cyan); }
+  .ostat[data-owner="hold"]{ border-top-color:var(--red); } .ostat[data-owner="hold"] .num{ color:var(--red); }
+  .ostat[data-owner="po"]{ border-top-color:var(--green); } .ostat[data-owner="po"] .num{ color:var(--green); }
+  .ostat[data-owner="cancelled"]{ border-top-color:var(--text-faint); } .ostat[data-owner="cancelled"] .num{ color:var(--text-faint); }
+
+  .clear-filter{
+    display:none; align-items:center; gap:8px; font-family:var(--mono); font-size:11.5px;
+    color:var(--cyan); background:rgba(63,214,196,0.08); border:1px solid rgba(63,214,196,0.35);
+    border-radius:7px; padding:7px 12px; cursor:pointer; margin-bottom:16px; width:fit-content;
+  }
+  .clear-filter.show{ display:flex; }
+  .clear-filter:hover{ background:rgba(63,214,196,0.15); }
+
+  .legend{
+    display:flex; gap:16px; flex-wrap:wrap; margin-bottom:18px;
+    font-family:var(--mono); font-size:10.5px; color:var(--text-faint); align-items:center;
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .sq{ width:9px; height:9px; border-radius:2px; display:inline-block; }
+
+  .search{
+    width:100%; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:9px 12px; color:var(--text); font-family:var(--mono); font-size:13px;
+    outline:none; margin-bottom:18px;
+  }
+  .search::placeholder{ color:var(--text-faint); }
+  .search:focus{ border-color:var(--cyan); }
+
+  /* ---------------- site cards ---------------- */
+  .list{ display:flex; flex-direction:column; gap:10px; }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px 20px; transition:opacity .15s ease, box-shadow .15s ease;
+  }
+
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .card-id .title{ font-family:var(--mono); font-weight:700; font-size:14.5px; letter-spacing:0.01em; }
+  .card-id .addr{ font-size:11.5px; color:var(--text-dim); margin-top:5px; max-width:380px; }
+  .card-id .eng{ font-family:var(--mono); font-size:10px; color:var(--text-faint); margin-top:4px; }
+
+  .ball-badge{
+    font-family:var(--mono); font-size:12px; font-weight:700; padding:8px 14px; border-radius:8px;
+    white-space:nowrap; text-align:right; letter-spacing:0.02em;
+  }
+  .ball-badge .tag{ display:block; font-size:9px; font-weight:400; letter-spacing:0.1em; opacity:0.75; margin-bottom:2px; text-transform:uppercase; }
+  .ball-badge.coreweave{ background:rgba(165,134,240,0.1); color:var(--purple); border:1px solid rgba(165,134,240,0.4); }
+  .ball-badge.s101{ background:rgba(63,214,196,0.1); color:var(--cyan); border:1px solid rgba(63,214,196,0.4); }
+  .ball-badge.hold{ background:rgba(229,96,79,0.1); color:var(--red); border:1px solid rgba(229,96,79,0.4); }
+
+  .reason{ font-size:12.5px; color:var(--text-dim); margin-bottom:16px; line-height:1.45; }
+
+  /* ---- two-proposal block ---- */
+  .proposals{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .prop-chip{
+    flex:1; min-width:200px; border-radius:8px; padding:10px 13px;
+    border:1px solid var(--line); background:var(--panel-2);
+  }
+  .prop-label{ font-family:var(--mono); font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; }
+  .prop-hint{ color:var(--text-faint); text-transform:none; letter-spacing:0; }
+  .prop-val{ font-family:var(--mono); font-size:14px; font-weight:700; margin-top:5px; }
+  .po-pill{
+    display:inline-block; margin-top:7px; font-family:var(--mono); font-size:9.5px; font-weight:700;
+    letter-spacing:0.04em; padding:3px 8px; border-radius:5px; text-transform:uppercase;
+  }
+  .po-pill.po-yes{ color:var(--green); background:rgba(91,209,122,0.1); border:1px solid rgba(91,209,122,0.4); }
+  .po-pill.po-no{ color:var(--text-faint); background:rgba(124,141,166,0.08); border:1px solid var(--line); }
+
+  /* ---- swimlane ---- */
+  .swim{ position:relative; padding-top:6px; margin-bottom:4px; }
+  .swim-track{ display:grid; grid-template-columns:repeat(5,1fr); position:relative; }
+  .swim-line{ position:absolute; top:13px; left:5%; right:5%; height:2px; background:var(--line); z-index:0; }
+  .swim-stop{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .swim-node{
+    width:26px; height:26px; border-radius:50%; background:var(--panel);
+    border:2px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10px; color:var(--text-faint);
+  }
+  .swim-stop.past .swim-node{ background:var(--panel-2); border-color:var(--text-faint); color:var(--text-dim); }
+  .swim-stop.current .swim-node{ border-width:3px; transform:scale(1.15); box-shadow:0 0 0 4px rgba(63,214,196,0.12); }
+  .swim-stop.current.coreweave .swim-node{ border-color:var(--purple); background:var(--purple); color:var(--bg); box-shadow:0 0 0 4px rgba(165,134,240,0.18); }
+  .swim-stop.current.s101 .swim-node{ border-color:var(--cyan); background:var(--cyan); color:var(--bg); box-shadow:0 0 0 4px rgba(63,214,196,0.18); }
+  .swim-stop.current.decision .swim-node{ border-color:var(--amber); background:var(--amber); color:var(--bg); box-shadow:0 0 0 4px rgba(240,194,60,0.18); border-radius:6px; transform:scale(1.15); }
+
+  .branch-note{
+    margin-top:10px; font-family:var(--mono); font-size:10.5px; border-radius:7px; padding:8px 11px; text-align:center;
+  }
+  .branch-note.scheduled{ color:var(--green); background:rgba(91,209,122,0.08); border:1px dashed rgba(91,209,122,0.35); }
+  .branch-note.change{ color:var(--amber); background:rgba(240,194,60,0.08); border:1px dashed rgba(240,194,60,0.35); }
+  .swim-label{ font-family:var(--mono); font-size:9.5px; color:var(--text-faint); text-align:center; line-height:1.3; }
+  .swim-stop.current .swim-label{ color:var(--text); font-weight:700; }
+  .swim-stop.past .swim-label{ color:var(--text-dim); }
+
+  .hold-strip{
+    margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--red);
+    background:rgba(229,96,79,0.07); border:1px dashed rgba(229,96,79,0.35); border-radius:7px;
+    padding:7px 10px; text-align:center;
+  }
+
+  /* ---- simple overall progress ---- */
+  .progress-row{ display:flex; align-items:center; gap:12px; margin-top:14px; }
+  .progress-track{
+    flex:1; height:8px; border-radius:5px; background:#161E2C; border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .progress-fill{ height:100%; border-radius:5px; }
+  .progress-pct{ font-family:var(--mono); font-size:12.5px; font-weight:700; min-width:38px; text-align:right; }
+
+  /* ---- payment milestones ---- */
+  .payment-block{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+  .payment-label{
+    font-family:var(--mono); font-size:9px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px;
+  }
+  .milestones{ display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+  .milestone-row{ display:flex; align-items:center; gap:8px; font-size:12px; }
+  .m-label{ flex:1; color:var(--text-dim); }
+  .m-pct{ font-family:var(--mono); font-size:11px; color:var(--text-faint); min-width:32px; text-align:right; }
+  .m-status{
+    font-family:var(--mono); font-size:9px; font-weight:700; letter-spacing:0.05em;
+    padding:2px 7px; border-radius:4px; text-transform:uppercase; white-space:nowrap;
+  }
+  .m-status.pending{ color:var(--text-faint); background:rgba(124,141,166,0.1); border:1px solid var(--line); }
+  .m-status.invoiced{ color:var(--amber); background:rgba(240,194,60,0.1); border:1px solid rgba(240,194,60,0.35); }
+  .m-status.paid{ color:var(--green); background:rgba(91,209,122,0.1); border:1px solid rgba(91,209,122,0.35); }
+  .collected-row{ display:flex; align-items:center; gap:10px; margin-top:4px; }
+  .collected-track{
+    flex:1; height:5px; border-radius:3px; background:#161E2C; border:1px solid var(--line); overflow:hidden;
+  }
+  .collected-fill{ height:100%; border-radius:3px; background:var(--green); transition:width .3s ease; }
+  .collected-label{ font-family:var(--mono); font-size:10px; color:var(--text-dim); white-space:nowrap; }
+  .collected-label b{ color:var(--green); }
+
+  /* ---- cancelled badge ---- */
+  .cancelled-badge{
+    display:inline-block; font-family:var(--mono); font-size:9px; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase; padding:3px 9px; border-radius:5px;
+    color:var(--text-faint); background:rgba(124,141,166,0.08);
+    border:1px solid rgba(124,141,166,0.25); margin-top:6px;
+  }
+  .card.is-cancelled{ opacity:0.5; border-style:dashed; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="eyebrow">Security 101 &middot; CoreWeave POP Program</div>
+  <h1>CoreWeave POP Status Tracker</h1>
+  <div class="sub">For each site: where things stand, and who needs to act next.</div>
+  <div id="sourceStatus" class="source-status">Local snapshot</div>
+</div>
+
+<div class="owner-strip" id="ownerStrip"></div>
+<div class="clear-filter" id="clearFilter">&times; <span id="clearFilterLbl">Clear filter</span></div>
+
+<div class="legend">
+  <span><span class="dot" style="background:var(--purple)"></span>With CoreWeave</span>
+  <span><span class="dot" style="background:var(--cyan)"></span>With Security 101</span>
+  <span><span class="dot" style="background:var(--amber)"></span>Walk result &mdash; decision point</span>
+  <span><span class="dot" style="background:var(--red)"></span>On hold</span>
+</div>
+
+<input type="text" id="search" class="search" placeholder="Search site, city, or site code...">
+
+<div class="list" id="list"></div>
+
+<footer>Lifecycle: CoreWeave provides plans &rarr; S101 builds CAD &rarr; CoreWeave/colo approval &rarr; local office walks the site &rarr; confirmed (scheduled, hands off to Mike Burr's national install team) or change needed (change order back to CoreWeave)</footer>
+
+<script>
+// ---- LIVE DATA FEED CONFIG ----
+// Paste the Apps Script Web app URL and token here once the sheet is deployed.
+// Leave dataUrl empty to keep using the local snapshot below.
+const CONFIG = {
+  _g: "aHR0cHM6Ly9kb2NzLmdvb2dsZS5jb20vc3ByZWFkc2hlZXRzL2QvMWFOSmVqZGR0WGYzZmtXUUJYZDB3MDZxWUlsdzllZGlLWFMtcEdNdGlBQjQvZ3Zpei90cT90cXg9b3V0Ompzb24mZ2lkPTczMzk2Mjc4Mw=="
+};
+
+const SWIM_STOPS = [
+  {key:"coreweave", label:"CoreWeave\nprovides\nplans"},
+  {key:"s101", label:"S101 builds\nCAD &\nlayout"},
+  {key:"coreweave", label:"CoreWeave /\ncolo\napproval"},
+  {key:"s101", label:"Local office\nwalks the\nsite"},
+  {key:"decision", label:"Walk result:\nconfirmed or\nchange needed"},
+];
+
+const STAGE_ABBR = ["ENG\nProp","Plans\nRecv","ENG\nPO","Axis\nCam","CAD\nDone","CAD\u2192CW","CAD\u2192Colo","Prop","Prop\nPO","Local\nRvw"];
+
+// type: only filled in where the source data explicitly states a space type (e.g. "Cage").
+// Everywhere else it is left TBD rather than guessed, per sourcing rules.
+// Milestone status options: "Pending" | "Invoiced" | "Paid"
+// cancelled: true removes from active counts, shows Cancelled badge
+const RAW = [
+  {site:"US-ATL03", city:"Atlanta", state:"GA", code:"ATL03", type:"TBD", loc:"180 Peachtree St, Atlanta, GA 30303, USA", eng:"301881", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-CHI01", city:"Chicago", state:"IL", code:"CHI01", type:"TBD", loc:"350 E Cermak Rd, Chicago, IL 60616, USA", eng:"301885", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-DAL01", city:"Dallas", state:"TX", code:"DAL01", type:"TBD", loc:"1990 N Stemmons Fwy, Dallas, TX 75207, USA", eng:"302561", po:"", engPoIssued:false, instPoIssued:false, vals:[10,10,0,0,0,0,0,0,0,0], note:"On hold", holdReason:"CoreWeave has this site on hold &mdash; we're waiting for the previous integrator to exit before we can even access the site. No drawings exist yet. An engineering proposal will be queued once site access opens up.",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-DEN01", city:"Denver", state:"CO", code:"DEN01", type:"TBD", loc:"910 15th St, Denver, CO 80202, USA", eng:"301887", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"Cage 0104", city:"Denver", state:"CO", code:"0104", type:"CAGE", loc:"910 15th St, Denver, CO 80202, USA", eng:"301888", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-LAX01", city:"Los Angeles", state:"CA", code:"LAX01", type:"TBD", loc:"624 S Grand Ave, Los Angeles, CA 90017, USA", eng:"301891", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-PHL01", city:"Philadelphia", state:"PA", code:"PHL01", type:"TBD", loc:"401 N Broad St, Philadelphia, PA 19108, USA", eng:"298526", po:"286822", engPoIssued:true, instPoIssued:true, vals:[10,10,10,10,10,10,5,10,10,0], note:"Waiting for Colo approval",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Invoiced"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-QAS01", city:"Ashburn", state:"VA", code:"QAS01", type:"TBD", loc:"21715 Filigree Ct, Ashburn, VA 20147, USA", eng:"301893", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-SEA01", city:"Seattle", state:"WA", code:"SEA01", type:"TBD", loc:"2001 6th Ave #300, Seattle, WA 98121, USA", eng:"302636", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-SJC01", city:"San Jose", state:"CA", code:"SJC01", type:"TBD", loc:"11 Great Oaks Blvd, San Jose, CA 95119, USA", eng:"302565", po:"", engPoIssued:false, instPoIssued:false, vals:[10,10,0,5,5,0,0,0,0,0], note:"Need to map out cameras",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-UYK01", city:"Secaucus", state:"NJ", code:"UYK01", type:"TBD", loc:"105 Enterprise Ave S, Secaucus, NJ 07094, USA", eng:"302568", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-CHI02", city:"Chicago", state:"IL", code:"CHI02", type:"TBD", loc:"350 E Cermak Road, Suite 355, Chicago, IL 60616, USA", eng:"302638", po:"", engPoIssued:false, instPoIssued:false, vals:[10,5,0,0,0,0,0,0,0,0], note:"RFI",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-DAL02", city:"Dallas", state:"TX", code:"DAL02", type:"TBD", loc:"1990 N Stemmons Fwy, Dallas, TX 75207, USA", eng:"301877", po:"286824.1", engPoIssued:false, instPoIssued:true, vals:[10,10,0,10,10,0,0,10,10,0], note:"Need PO, need to send 1st draft",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-PDX01", city:"Portland", state:"OR", code:"PDX01", type:"TBD", loc:"921 SW Washington St, Portland, OR 97205, USA", eng:"302571", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-QTS01", city:"Englewood", state:"CO", code:"QTS01", type:"TBD", loc:"335 Inverness Dr S, Englewood, CO 80112, USA", eng:"302584", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-SEA02", city:"Seattle", state:"WA", code:"SEA02", type:"TBD", loc:"2001 6th Ave #350, Seattle, WA 98121, USA", eng:"302637", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-PLZ03", city:"Plano", state:"TX", code:"PLZ03", type:"TBD", loc:"8375 Dominion Pkwy, Plano, TX 75024, USA", eng:"302586", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-RNE01", city:"Roanoke", state:"TX", code:"RNE01", type:"TBD", loc:"13600 Haslet Roanoke Rd, Roanoke, TX 76262, USA", eng:"302589", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"Alliance Building", city:"Roanoke", state:"TX", code:"", type:"TBD", loc:"13600 Haslet Roanoke Rd, Roanoke, TX 76262, USA", eng:"302595", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+  {site:"US-HOU01", city:"Houston", state:"TX", code:"HOU01", type:"TBD", loc:"660 Greens Pkwy, Houston, TX, USA", eng:"302599", po:"", engPoIssued:false, instPoIssued:false, vals:[10,0,0,0,0,0,0,0,0,0], note:"No plans",
+    cancelled:false,
+    engM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}],
+    instM:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}]
+  },
+];
+
+function deriveOwner(d){
+  const n = (d.note||"").toLowerCase();
+  if(n.includes("on hold"))
+    return {owner:"hold", swimIdx:-1, label:"On hold", reason: d.holdReason || d.note || "This project is on hold pending an internal decision before work resumes."};
+  if(n.includes("no plans") || n.includes("rfi"))
+    return {owner:"coreweave", swimIdx:0, label:"With CoreWeave", reason:"Waiting on CoreWeave to provide a CAD or clear PDF of the floor plan before we can start the layout."};
+  if(n.includes("waiting for colo"))
+    return {owner:"coreweave", swimIdx:2, label:"With CoreWeave", reason:"Layout and coverage plan are submitted; waiting on CoreWeave's facility to approve mounting and placement."};
+  if(n.includes("map out cameras"))
+    return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"Plans are in hand. We're actively laying out camera and device positions on the drawing."};
+  if(n.includes("need po") || n.includes("1st draft"))
+    return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"We need to send the first proposal draft; a CoreWeave PO is also still pending on this site."};
+  return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"In progress with our engineering team."};
+}
+
+function buildData(raw){
+  return raw.map((d,i) => {
+    const pct = d.vals.reduce((a,b)=>a+b,0);
+    const own = deriveOwner(d);
+    return Object.assign({}, d, {pct, idx:i, owner:own.owner, swimIdx:own.swimIdx, ownerLabel:own.label, reason:own.reason});
+  });
+}
+
+let DATA = buildData(RAW);
+
+const STAT_DEFS = [
+  {key:"coreweave", label:"With CoreWeave", filter:d=>d.owner==="coreweave" && !d.cancelled},
+  {key:"s101", label:"With Security 101", filter:d=>d.owner==="s101" && !d.cancelled},
+  {key:"hold", label:"On hold", filter:d=>d.owner==="hold" && !d.cancelled},
+  {key:"po", label:"Has a PO issued", filter:d=>(d.engPoIssued===true || d.instPoIssued===true) && !d.cancelled},
+  {key:"cancelled", label:"Cancelled", filter:d=>d.cancelled===true},
+];
+
+let activeStat = null;
+let currentSearch = "";
+
+function titleHTML(d){
+  return `<span class="seg">${d.site}</span>`;
+}
+
+function renderOwnerStrip(){
+  const strip = document.getElementById('ownerStrip');
+  strip.innerHTML = STAT_DEFS.map(o => {
+    const count = DATA.filter(o.filter).length;
+    const isActive = activeStat === o.key;
+    return `<div class="ostat ${isActive?'active':''}" data-owner="${o.key}">
+      <div class="num">${count}</div><div class="lbl">${o.label}</div>
+    </div>`;
+  }).join("");
+  strip.querySelectorAll('.ostat').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const k = el.dataset.owner;
+      activeStat = (activeStat===k) ? null : k;
+      renderOwnerStrip();
+      renderList();
+    });
+  });
+  const chip = document.getElementById('clearFilter');
+  const lbl = document.getElementById('clearFilterLbl');
+  if(activeStat){
+    chip.classList.add('show');
+    lbl.textContent = `Showing: ${STAT_DEFS.find(o=>o.key===activeStat).label} \u2014 click to clear`;
+  } else { chip.classList.remove('show'); }
+}
+document.getElementById('clearFilter').addEventListener('click', ()=>{ activeStat=null; renderOwnerStrip(); renderList(); });
+
+function swimHTML(d){
+  if(d.owner==="hold"){
+    return `<div class="hold-strip">${d.reason}</div>`;
+  }
+  const stops = SWIM_STOPS.map((s,i)=>{
+    let cls = "swim-stop";
+    if(i < d.swimIdx) cls += " past";
+    if(i === d.swimIdx) cls += " current " + (i===4 ? "decision" : d.owner);
+    return `<div class="${cls}">
+      <div class="swim-node">${i+1}</div>
+      <div class="swim-label">${s.label.replace(/\n/g,"<br>")}</div>
+    </div>`;
+  }).join("");
+  let branch = "";
+  if(d.walkOutcome === "scheduled"){
+    branch = `<div class="branch-note scheduled">&#10003; Walk confirmed, scope as-is &mdash; site is scheduled and now hands off to the national install team (Mike Burr). It will drop off this tracker once handoff is complete.</div>`;
+  } else if(d.walkOutcome === "change"){
+    branch = `<div class="branch-note change">&#8617; Walk found a delta from scope &mdash; a change order goes back to CoreWeave for approval before plans are finalized.</div>`;
+  }
+  return `<div class="swim"><div class="swim-track"><div class="swim-line"></div>${stops}</div></div>${branch}`;
+}
+
+function progressHTML(d){
+  const color = d.pct>=70 ? "var(--green)" : d.pct>=30 ? "var(--amber)" : "var(--red)";
+  return `<div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" style="width:${d.pct}%; background:${color}"></div></div>
+      <div class="progress-pct">${d.pct}%</div>
+    </div>`;
+}
+
+function milestonesHTML(milestones){
+  if(!milestones || !milestones.length) return "";
+  const paidPct = milestones.reduce((sum,m)=> m.s==="Paid" ? sum+m.p : sum, 0);
+  const invoicedPct = milestones.reduce((sum,m)=> m.s==="Invoiced" || m.s==="Paid" ? sum+m.p : sum, 0);
+  const rows = milestones.map(m => {
+    const sCls = (m.s||"Pending").toLowerCase();
+    return `<div class="milestone-row">
+      <span class="m-label">${m.l}</span>
+      <span class="m-pct">${m.p}%</span>
+      <span class="m-status ${sCls}">${m.s||"Pending"}</span>
+    </div>`;
+  }).join("");
+  const collectedLabel = paidPct > 0
+    ? `<b>${paidPct}% paid</b>${invoicedPct > paidPct ? ` &middot; ${invoicedPct-paidPct}% invoiced` : ""}`
+    : invoicedPct > 0
+      ? `<b>${invoicedPct}% invoiced</b>, awaiting payment`
+      : `<span style="color:var(--text-faint)">0% collected</span>`;
+  return `<div class="payment-block">
+    <div class="payment-label">Billing schedule</div>
+    <div class="milestones">${rows}</div>
+    <div class="collected-row">
+      <div class="collected-track"><div class="collected-fill" style="width:${paidPct}%"></div></div>
+      <div class="collected-label">${collectedLabel}</div>
+    </div>
+  </div>`;
+}
+
+function fmtProp(num){
+  if(!num) return null;
+  const s = String(num).trim();
+  return s.includes(".") ? s : s + ".0";
+}
+
+function proposalHTML(d){
+  const engNum = fmtProp(d.eng);
+  const instNum = fmtProp(d.po);
+  const engPoCls = d.engPoIssued ? "po-yes" : "po-no";
+  const engPoLabel = d.engPoIssued ? "PO Issued" : "No PO";
+  const instPoCls = d.instPoIssued ? "po-yes" : "po-no";
+  const instPoLabel = d.instPoIssued ? "PO Issued" : "No PO";
+  return `<div class="proposals">
+      <div class="prop-chip">
+        <div class="prop-label">Engineering proposal <span class="prop-hint">(design scope)</span></div>
+        <div class="prop-val">${engNum || "Not yet created"}</div>
+        <div class="po-pill ${engPoCls}">${engPoLabel}</div>
+        ${d.engPoIssued ? milestonesHTML(d.engM) : ""}
+      </div>
+      <div class="prop-chip">
+        <div class="prop-label">Installation proposal <span class="prop-hint">(the actual POP build)</span></div>
+        <div class="prop-val">${instNum || "Not yet created"}</div>
+        <div class="po-pill ${instPoCls}">${instPoLabel}</div>
+        ${d.instPoIssued ? milestonesHTML(d.instM) : ""}
+      </div>
+    </div>`;
+}
+
+function renderList(){
+  const term = currentSearch.toLowerCase();
+  const list = document.getElementById('list');
+  let rows = DATA.filter(d => (d.site+" "+d.city+" "+d.state+" "+d.code).toLowerCase().includes(term));
+  if(activeStat){
+    const def = STAT_DEFS.find(o=>o.key===activeStat);
+    rows = rows.filter(def.filter);
+  }
+  if(rows.length===0){ list.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text-faint);font-family:var(--mono);font-size:13px;">No sites match.</div>`; return; }
+
+  list.innerHTML = rows.map(d => {
+    const cancelledBadge = d.cancelled ? `<div class="cancelled-badge">&#10007; Cancelled</div>` : "";
+    const cardCls = d.cancelled ? "card is-cancelled" : "card";
+    return `
+    <div class="${cardCls}">
+      <div class="card-top">
+        <div class="card-id">
+          <div class="title">${titleHTML(d)}</div>
+          <div class="addr">${d.loc}</div>
+          ${cancelledBadge}
+        </div>
+        <div class="ball-badge ${d.owner}"><span class="tag">Status</span>${d.ownerLabel}</div>
+      </div>
+      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}</div>`}
+      ${proposalHTML(d)}
+      ${swimHTML(d)}
+      ${progressHTML(d)}
+    </div>`;
+  }).join("");
+}
+
+document.getElementById('search').addEventListener('input', e=>{ currentSearch = e.target.value; renderList(); });
+
+renderOwnerStrip();
+renderList();
+
+const STAGE_HEADERS = ["ENG Proposal","Plans Received","ENG PO","Axis Cam Layout","CAD Done",
+  "CAD Submitted (CW)","CAD Submitted (Colo)","Proposal","Proposal PO","Local Office Reviewed"];
+
+function parseMilestones(row, prefix){
+  const out = [];
+  for(let i=1;i<=3;i++){
+    const l = (row[`${prefix} M${i} Label`]||"").trim();
+    const p = parseFloat(row[`${prefix} M${i} %`]||"0");
+    const s = (row[`${prefix} M${i} Status`]||"Pending").trim();
+    if(l && p) out.push({l,p,s});
+  }
+  // default 50/50 if nothing defined
+  if(!out.length) out.push(
+    {l:"Upon mobilization",p:50,s:"Pending"},
+    {l:"Upon work complete",p:50,s:"Pending"}
+  );
+  return out;
+}
+
+function fieldsFromRow(cols, row){
+  const f={};
+  cols.forEach((c,i)=>{
+    const cell=row.c[i];
+    f[c.label]= cell&&cell.v!==null&&cell.v!==undefined ? cell.v : "";
+  });
+  return f;
+}
+
+function rowToRaw(f){
+  const mil=(prefix,num)=>{
+    const l=String(f[`${prefix} M${num} Label`]||"").trim();
+    const p=parseFloat(f[`${prefix} M${num} %`]||"0");
+    const s=String(f[`${prefix} M${num} Status`]||"Pending").trim();
+    return l&&p?{l,p,s}:null;
+  };
+  const getMil=(prefix)=>{
+    const ms=[1,2,3].map(n=>mil(prefix,n)).filter(Boolean);
+    return ms.length?ms:[{l:"Upon mobilization",p:50,s:"Pending"},{l:"Upon work complete",p:50,s:"Pending"}];
+  };
+  return {
+    site: String(f["Site"]||""),
+    city: String(f["City"]||""),
+    state: String(f["State"]||""),
+    code: String(f["Site Code"]||""),
+    type: String(f["Space Type"]||"TBD"),
+    loc: String(f["Address"]||""),
+    eng: f["Eng Proposal #"]?String(f["Eng Proposal #"]):"",
+    engPoIssued: String(f["Eng PO Status"]||"").trim()==="PO Issued",
+    po: f["Install Proposal #"]?String(f["Install Proposal #"]):"",
+    instPoIssued: String(f["Install PO Status"]||"").trim()==="PO Issued",
+    vals: STAGE_HEADERS.map(h=>Number(f[h])||0),
+    note: String(f["Notes / Hold Reason"]||""),
+    holdReason: String(f["Notes / Hold Reason"]||""),
+    cancelled: String(f["Cancelled"]||"").toLowerCase()==="yes",
+    engM: getMil("Eng"),
+    instM: getMil("Inst"),
+  };
+}
+
+function setSourceStatus(mode,when){
+  const el=document.getElementById('sourceStatus');
+  if(!el) return;
+  if(mode==="live"){el.textContent=`Live \u2014 synced ${when}`;el.className="source-status live";}
+  else if(mode==="error"){el.textContent="Live feed unavailable \u2014 showing local data";el.className="source-status error";}
+  else{el.textContent="Local snapshot";el.className="source-status";}
+}
+
+async function fetchLiveData(){
+  try{
+    const url=atob(CONFIG._g);
+    const res=await fetch(url);
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const text=await res.text();
+    // Strip JSONP wrapper google.visualization.Query.setResponse({...});
+    const json=JSON.parse(text.replace(/^[^(]+\(/, "").replace(/\);?\s*$/, ""));
+    if(json.status==="error") throw new Error(json.errors?.[0]?.message||"Sheets error");
+    const cols=json.table.cols;
+    const rows=json.table.rows||[];
+    const raw=rows.filter(r=>r&&r.c&&r.c[0]&&r.c[0].v)
+      .map(r=>rowToRaw(fieldsFromRow(cols,r)));
+    DATA=buildData(raw);
+    renderOwnerStrip();
+    renderList();
+    setSourceStatus("live",new Date().toLocaleTimeString());
+  } catch(err){
+    console.warn("Sheets feed:",err);
+    setSourceStatus("error");
+  }
+}
+fetchLiveData();
+</script>
+
+</body>
+</html>
