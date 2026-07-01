@@ -1,0 +1,21 @@
+Site,Address,City,State,Site Code,Space Type,Eng Proposal #,Eng PO Status,Install Proposal #,Install PO Status,ENG Proposal,Plans Received,ENG PO,Axis Cam Layout,CAD Done,CAD Submitted (CW),CAD Submitted (Colo),Proposal,Proposal PO,Local Office Reviewed,Total Completion %,Current Step,Notes / Hold Reason
+US-ATL03,"180 Peachtree St, Atlanta, GA 30303, USA",Atlanta,GA,ATL03,TBD,301881,No PO,,No PO,10,5,0,0,0,0,0,0,0,0,15%,Plans received,RFI
+US-CHI01,"350 E Cermak Rd, Chicago, IL 60616, USA",Chicago,IL,CHI01,TBD,301885,No PO,,No PO,10,5,0,0,0,0,0,0,0,0,15%,Plans received,RFI
+US-DAL01,"1990 N Stemmons Fwy, Dallas, TX 75207, USA",Dallas,TX,DAL01,TBD,302561,No PO,,No PO,10,10,0,0,0,0,0,0,0,0,20%,ENG PO,On hold - CoreWeave: waiting for the previous integrator to exit before we can access the site. No drawings exist yet. Engineering proposal to be queued once site access opens up.
+US-DEN01,"910 15th St, Denver, CO 80202, USA",Denver,CO,DEN01,TBD,301887,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+Cage 0104,"910 15th St, Denver, CO 80202, USA",Denver,CO,0104,CAGE,301888,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-LAX01,"624 S Grand Ave, Los Angeles, CA 90017, USA",Los Angeles,CA,LAX01,TBD,301891,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-PHL01,"401 N Broad St, Philadelphia, PA 19108, USA",Philadelphia,PA,PHL01,TBD,298526,PO Issued,286822,PO Issued,10,10,10,10,10,10,5,10,10,0,85%,CAD Submitted Colo,Waiting for Colo approval
+US-QAS01,"21715 Filigree Ct, Ashburn, VA 20147, USA",Ashburn,VA,QAS01,TBD,301893,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-SEA01,"2001 6th Ave #300, Seattle, WA 98121, USA",Seattle,WA,SEA01,TBD,302636,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-SJC01,"11 Great Oaks Blvd, San Jose, CA 95119, USA",San Jose,CA,SJC01,TBD,302565,No PO,,No PO,10,10,0,5,5,0,0,0,0,0,30%,ENG PO,Waiting on ENG PO
+US-UYK01,"105 Enterprise Ave S, Secaucus, NJ 07094, USA",Secaucus,NJ,UYK01,TBD,302568,No PO,,No PO,10,5,0,0,0,0,0,0,0,0,15%,Plans received,RFI
+US-CHI02,"350 E Cermak Road, Suite 355, Chicago, IL 60616, USA",Chicago,IL,CHI02,TBD,302638,No PO,,No PO,10,5,0,0,0,0,0,0,0,0,15%,Plans received,RFI
+US-DAL02,"1990 N Stemmons Fwy, Dallas, TX 75207, USA",Dallas,TX,DAL02,TBD,301877,No PO,286824.1,PO Issued,10,10,0,10,10,0,0,10,10,0,60%,ENG PO,Waiting on ENG PO
+US-PDX01,"921 SW Washington St, Portland, OR 97205, USA",Portland,OR,PDX01,TBD,302571,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-QTS01,"335 Inverness Dr S, Englewood, CO 80112, USA",Englewood,CO,QTS01,TBD,302584,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-SEA02,"2001 6th Ave #350, Seattle, WA 98121, USA",Seattle,WA,SEA02,TBD,302637,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-PLZ03,"8375 Dominion Pkwy, Plano, TX 75024, USA",Plano,TX,PLZ03,TBD,302586,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-RNE01,"13600 Haslet Roanoke Rd, Roanoke, TX 76262, USA",Roanoke,TX,RNE01,TBD,302589,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+Alliance Building,"13600 Haslet Roanoke Rd, Roanoke, TX 76262, USA",Roanoke,TX,,TBD,302595,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
+US-HOU01,"660 Greens Pkwy, Houston, TX, USA",Houston,TX,HOU01,TBD,302599,No PO,,No PO,10,0,0,0,0,0,0,0,0,0,10%,ENG PO,No plans
