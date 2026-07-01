@@ -185,7 +185,7 @@
     margin-bottom:24px; border-radius:14px; overflow:hidden;
     border:1px solid var(--line); position:relative;
   }
-  #siteMap{ height:340px; background:#0D1118; position:relative; overflow:hidden; }
+  #siteMap{ height:310px; background:#0D1118; position:relative; overflow:hidden; }
   .map-section .map-title{
     position:absolute; top:14px; left:14px; z-index:1000;
     font-family:var(--mono); font-size:10px; letter-spacing:0.1em;
@@ -592,18 +592,16 @@ document.getElementById('search').addEventListener('input', e=>{ currentSearch =
 const SITE_COLORS = {coreweave:'#2563EB',s101:'#16A34A',colo:'#EAB308',rfi:'#DC2626',hold:'#EA580C'};
 const SITE_LABELS = {coreweave:'With CoreWeave',s101:'With Security 101',colo:'With Colo',rfi:'RFI Outstanding',hold:'On Hold'};
 
-// Hardcoded site coordinates — map always works regardless of sheet columns
-const FALLBACK_COORDS = {
-  "US-ATL03":[33.7557,-84.3873],"US-CHI01":[41.8504,-87.627],
-  "US-DAL01":[32.7897,-96.8048],"US-DEN01":[39.7416,-104.9873],
-  "Cage 0104":[39.742,-104.9868],"US-LAX01":[34.0504,-118.2536],
-  "US-PHL01":[39.9551,-75.1567],"US-QAS01":[39.0398,-77.4879],
-  "US-SEA01":[47.6167,-122.342],"US-SJC01":[37.2521,-121.8312],
-  "US-UYK01":[40.7904,-74.0585],"US-CHI02":[41.8503,-87.6276],
-  "US-DAL02":[32.79,-96.8058],"US-PDX01":[45.5235,-122.6759],
-  "US-QTS01":[39.5903,-104.8722],"US-SEA02":[47.6162,-122.3425],
-  "US-PLZ03":[33.1584,-96.8246],"US-RNE01":[33.0087,-97.2214],
-  "Alliance Building":[33.0083,-97.2222],"US-HOU01":[29.9978,-95.4113]
+// Pre-computed pixel positions at viewBox 960x340 (equirectangular US projection)
+// These are fixed — no runtime math, no dependency on container size
+const SITE_PX = {
+  "US-ATL03":[642,207],"US-CHI01":[591,123],"US-DAL01":[462,217],
+  "US-DEN01":[348,145],"Cage 0104":[352,148],"US-LAX01":[170,204],
+  "US-PHL01":[762,138],"US-QAS01":[733,150],"US-SEA01":[113,55],
+  "US-SJC01":[121,168],"US-UYK01":[775,131],"US-CHI02":[595,126],
+  "US-DAL02":[465,220],"US-PDX01":[109,77],"US-QTS01":[350,147],
+  "US-SEA02":[116,57],"US-PLZ03":[462,212],"US-RNE01":[457,214],
+  "Alliance Building":[459,216],"US-HOU01":[481,248]
 };
 
 function initMap(data){
@@ -611,100 +609,126 @@ function initMap(data){
   if(!container) return;
   container.innerHTML = '';
 
-  // Popup overlay
+  const ns = 'http://www.w3.org/2000/svg';
+  const VW=960, VH=310;
+
+  // Popup
   const pop = document.createElement('div');
-  pop.className = 'map-popup'; pop.id = 'mapPopup';
+  pop.className='map-popup'; pop.id='mapPopup';
   container.appendChild(pop);
 
-  const W = Math.max(container.offsetWidth, 600);
-  const H = 340;
-  const ns = 'http://www.w3.org/2000/svg';
-  function mk(tag,attrs){
-    const el=document.createElementNS(ns,tag);
-    if(attrs) Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));
-    return el;
-  }
-
-  const svg = mk('svg',{width:'100%',height:H,viewBox:`0 0 ${W} ${H}`});
-  svg.style.display='block';
+  // Build the SVG
+  const svg = document.createElementNS(ns,'svg');
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height','310');
+  svg.setAttribute('viewBox','0 0 960 310');
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  svg.style.cssText='display:block;width:100%;height:310px;';
   container.appendChild(svg);
 
-  // Background
-  svg.appendChild(mk('rect',{width:W,height:H,fill:'#0D1118'}));
+  // Dark background
+  const bg = document.createElementNS(ns,'rect');
+  bg.setAttribute('width',VW); bg.setAttribute('height',VH); bg.setAttribute('fill','#0D1118');
+  svg.appendChild(bg);
 
-  // Subtle dot grid via pattern
-  const defs=mk('defs');
-  const pat=mk('pattern',{id:'mapgrid',width:'28',height:'28',patternUnits:'userSpaceOnUse'});
-  pat.appendChild(mk('circle',{cx:'1',cy:'1',r:'0.7',fill:'#1A2540'}));
-  defs.appendChild(pat);
-  svg.appendChild(defs);
-  svg.appendChild(mk('rect',{width:W,height:H,fill:'url(#mapgrid)'}));
+  // Dot grid
+  const defs = document.createElementNS(ns,'defs');
+  const pat = document.createElementNS(ns,'pattern');
+  pat.setAttribute('id','mg2'); pat.setAttribute('width','30'); pat.setAttribute('height','30');
+  pat.setAttribute('patternUnits','userSpaceOnUse');
+  const gc = document.createElementNS(ns,'circle');
+  gc.setAttribute('cx','1'); gc.setAttribute('cy','1'); gc.setAttribute('r','0.8'); gc.setAttribute('fill','#1A2540');
+  pat.appendChild(gc); defs.appendChild(pat); svg.appendChild(defs);
+  const gr = document.createElementNS(ns,'rect');
+  gr.setAttribute('width',VW); gr.setAttribute('height',VH); gr.setAttribute('fill','url(#mg2)');
+  svg.appendChild(gr);
 
-  // Equirectangular projection for continental US
-  function project(lat,lng){
-    const mn_lat=23.5,mx_lat=50.5,mn_lng=-127,mx_lng=-65;
-    const mg=0.07;
-    const x=mg*W+(lng-mn_lng)/(mx_lng-mn_lng)*W*(1-2*mg);
-    const y=mg*H+(1-(lat-mn_lat)/(mx_lat-mn_lat))*H*(1-2*mg);
-    return [Math.round(x),Math.round(y)];
-  }
+  // US state lines
+  const outline = document.createElementNS(ns,'path');
+  outline.setAttribute('d','M90,34 L369,34 L466,34 L508,34 L578,45 L605,57 L675,57 L703,113 L773,102 L801,91 L828,79 L886,57 L886,91 L884,102 L842,113 L828,119 L801,125 L773,148 L745,193 L745,215 L703,215 L689,295 L703,304 L675,312 L647,261 L605,249 L578,249 L550,261 L508,255 L466,295 L438,289 L396,255 L341,232 L334,227 L299,232 L271,232 L229,221 L187,221 L146,204 L90,159 L90,34Z');
+  outline.setAttribute('fill','#12192E');
+  outline.setAttribute('stroke','#2A3A58');
+  outline.setAttribute('stroke-width','0.8');
+  svg.appendChild(outline);
 
-  // Build status lookup from live data (keyed by site)
+  const hlines = document.createElementNS(ns,'path');
+  hlines.setAttribute('d','M90,34L884,34M90,40L187,40M90,57L369,57M369,68L473,68M90,79L884,79M550,91L605,91M90,102L801,102M801,108L884,108M90,113L801,113M703,125L787,125M90,136L773,136M647,147L773,147M550,159L773,159M229,170L773,170M647,176L773,176M550,181L647,181M550,193L745,193M382,210L647,210M341,227L689,227M508,249L689,249M438,261L508,261M452,295L703,295');
+  hlines.setAttribute('fill','none');
+  hlines.setAttribute('stroke','#243050');
+  hlines.setAttribute('stroke-width','0.6');
+  svg.appendChild(hlines);
+
+  const vlines = document.createElementNS(ns,'path');
+  vlines.setAttribute('d','M90,40L90,113M146,34L146,153M187,34L187,170M229,34L229,170M271,34L271,232M299,34L299,232M369,34L369,210M382,170L382,210M424,136L424,204M466,34L466,204M480,102L480,204M508,34L508,255M550,68L550,261M578,45L578,249M605,57L605,249M619,187L619,210M633,57L633,249M647,57L647,249M661,113L661,215M675,113L675,215M689,113L689,295M703,113L703,295M745,147L745,215M773,102L773,159M801,91L801,125M828,79L828,119');
+  vlines.setAttribute('fill','none');
+  vlines.setAttribute('stroke','#243050');
+  vlines.setAttribute('stroke-width','0.6');
+  svg.appendChild(vlines);
+
+  // Status lookup from live data
   const statusMap={};
-  data.forEach(d=>{ statusMap[d.site]=d; });
+  data.forEach(d=>{ if(d.site) statusMap[d.site]=d; });
 
-  // Always render ALL sites using FALLBACK_COORDS — never wait for sheet lat/lng
-  Object.entries(FALLBACK_COORDS).forEach(([site,coords])=>{
-    const d = statusMap[site] || {site, city:'', owner:'coreweave', note:'', pct:0, colo:'TBD'};
-    const lat=coords[0], lng=coords[1];
+  // Draw each site
+  Object.entries(SITE_PX).forEach(([site,[x,y]])=>{
+    const d=statusMap[site]||{owner:'coreweave',note:'',pct:0,colo:'TBD'};
     const isRfi=(d.note||'').toLowerCase().includes('rfi');
     const cls=d.owner==='hold'?'hold':isRfi?'rfi':d.owner==='s101'?'s101':d.owner==='colo'?'colo':'coreweave';
     const color=SITE_COLORS[cls];
     const label=SITE_LABELS[cls];
-    const [x,y]=project(lat,lng);
+    const r=isRfi?8:6;
 
-    const g=mk('g',{transform:`translate(${x},${y})`,style:'cursor:pointer'});
+    const g=document.createElementNS(ns,'g');
+    g.setAttribute('transform',`translate(${x},${y})`);
+    g.style.cursor='pointer';
 
-    // Outer pulse ring
-    const ring=mk('circle',{r:isRfi?'16':'12',fill:color,opacity:'0'});
-    ring.style.animation=`siteGlow ${isRfi?'0.85':'2.2'}s ease-out infinite`;
-    g.appendChild(ring);
+    // Glow halo (larger, transparent circle)
+    const halo=document.createElementNS(ns,'circle');
+    halo.setAttribute('r',String(r+8));
+    halo.setAttribute('fill',color);
+    halo.setAttribute('opacity','0.25');
+    g.appendChild(halo);
 
-    // Core dot — always visible
-    const dot=mk('circle',{r:isRfi?'7':'5',fill:color,stroke:'#0D1118','stroke-width':'1.5'});
+    // Solid core dot
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r',String(r));
+    dot.setAttribute('fill',color);
+    dot.setAttribute('stroke','#0D1118');
+    dot.setAttribute('stroke-width','1.5');
     dot.setAttribute('opacity','1');
-    dot.style.filter=`drop-shadow(0 0 ${isRfi?10:6}px ${color})`;
     g.appendChild(dot);
 
-    // City label (small, faint)
-    const lbl=mk('text',{x:'8',y:'4','font-size':'9','font-family':'monospace',fill:'rgba(168,186,208,0.7)'});
-    lbl.textContent=d.site||site;
-    g.appendChild(lbl);
+    // Site label
+    const txt=document.createElementNS(ns,'text');
+    txt.setAttribute('x',String(r+3));
+    txt.setAttribute('y','4');
+    txt.setAttribute('font-size','8');
+    txt.setAttribute('font-family','monospace');
+    txt.setAttribute('fill','rgba(168,186,208,0.65)');
+    txt.textContent=site;
+    g.appendChild(txt);
 
     g.addEventListener('mouseenter',()=>{
+      const cW=container.offsetWidth||960;
+      const scaleX=cW/VW;
+      const px=x*scaleX, py=y*(container.offsetHeight||340)/VH;
       pop.innerHTML=`<div class="popup-site">${site}</div>
         <div class="popup-colo">${d.colo||''}</div>
         <div class="popup-status" style="color:${color}">${label}</div>
         <div class="popup-pct">${d.pct||0}% complete</div>`;
-      let left=x+14, top=y-30;
-      if(left+190>W) left=x-206;
-      if(top<0) top=y+16;
-      if(top+90>H) top=H-95;
+      let left=px+12, top=py-30;
+      const cW2=container.offsetWidth;
+      if(left+190>cW2) left=px-202;
+      if(top<0) top=py+12;
+      if(top+90>340) top=290;
       pop.style.cssText=`display:block;left:${left}px;top:${top}px`;
     });
     g.addEventListener('mouseleave',()=>{ pop.style.display='none'; });
     g.addEventListener('click',()=>scrollToSite(site));
     svg.appendChild(g);
   });
-
-  // CSS keyframes (inject once)
-  if(!document.getElementById('siteGlowKF')){
-    const s=document.createElement('style');
-    s.id='siteGlowKF';
-    s.textContent='@keyframes siteGlow{0%{r:3;opacity:.9}75%{r:22;opacity:0}100%{r:22;opacity:0}}';
-    document.head.appendChild(s);
-  }
 }
+
 
 renderOwnerStrip();
 renderList();
