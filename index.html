@@ -529,7 +529,7 @@ function rowToRaw(f){
     note: String(f["Notes / Hold Reason"]||""),
     holdReason: String(f["Notes / Hold Reason"]||""),
     cancelled: String(f["Cancelled"]||"").toLowerCase()==="yes",
-    colo: String(f["Colo"]||f["Colo Provider"]||"").trim() || COLO_MAP[String(f["Site"]||"").trim()] || "TBD",
+    colo: COLO_MAP[String(f["Site"]||"").trim()] || String(f["Colo"]||f["Colo Provider"]||"").trim() || "TBD",
     lat: parseFloat(f["Lat"]||f["Latitude"]||"0")||0,
     lng: parseFloat(f["Lng"]||f["Longitude"]||"0")||0,
     engM: getMil("Eng"),
