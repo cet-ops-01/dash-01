@@ -258,7 +258,17 @@ function titleHTML(d){
   return `<span class="seg">${d.site}</span>`;
 }
 
-let activeColo = null;
+// Hardcoded colo provider per site — used when sheet "Colo" column is blank
+const COLO_MAP = {
+  "US-ATL03":"Equinix","US-CHI01":"Digital Realty","US-CHI02":"Digital Realty",
+  "US-DAL01":"Equinix","US-DAL02":"Equinix","US-DEN01":"CoreSite",
+  "Cage 0104":"CoreSite","US-LAX01":"CoreSite","US-PHL01":"Netrality",
+  "US-QAS01":"Equinix","US-SEA01":"Westin Building Exchange",
+  "US-SEA02":"Westin Building Exchange","US-SJC01":"Equinix",
+  "US-UYK01":"Equinix","US-PDX01":"Digital Realty","US-QTS01":"Equinix",
+  "US-PLZ03":"DataBank","US-RNE01":"TBD","Alliance Building":"TBD",
+  "US-HOU01":"Switch"
+};
 
 function pctCls(p){ return p>=70?"hi":p>=25?"mid":"lo"; }
 
@@ -501,7 +511,7 @@ function rowToRaw(f){
     note: String(f["Notes / Hold Reason"]||""),
     holdReason: String(f["Notes / Hold Reason"]||""),
     cancelled: String(f["Cancelled"]||"").toLowerCase()==="yes",
-    colo: String(f["Colo"]||f["Colo Provider"]||"TBD"),
+    colo: String(f["Colo"]||f["Colo Provider"]||"").trim() || COLO_MAP[String(f["Site"]||"").trim()] || "TBD",
     lat: parseFloat(f["Lat"]||f["Latitude"]||"0")||0,
     lng: parseFloat(f["Lng"]||f["Longitude"]||"0")||0,
     engM: getMil("Eng"),
