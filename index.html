@@ -112,6 +112,7 @@
   .ball-badge.coreweave{background:rgba(37,99,235,0.12);color:var(--blue);border:1px solid rgba(37,99,235,0.4);}
   .ball-badge.s101{background:rgba(22,163,74,0.10);color:var(--truegreen);border:1px solid rgba(22,163,74,0.4);}
   .ball-badge.hold{background:rgba(234,88,12,0.10);color:var(--trueorange);border:1px solid rgba(234,88,12,0.4);}
+  .ball-badge.rfi{background:rgba(220,38,38,0.12);color:var(--truered);border:1px solid rgba(220,38,38,0.45);}
   .ball-badge.colo{background:rgba(234,179,8,0.12);color:var(--trueyellow);border:1px solid rgba(234,179,8,0.45);}
   .ball-badge.rfi{background:rgba(220,38,38,0.12);color:var(--truered);border:1px solid rgba(220,38,38,0.45);}
   .reason{font-size:13px;color:var(--text-dim);margin-bottom:14px;line-height:1.5;}
@@ -209,23 +210,39 @@ const RAW = [];
 
 function deriveOwner(d){
   const n = (d.note||d.holdReason||"").toLowerCase();
+  const site = (d.site||"").trim();
+  const coloName = COLO_MAP[site] || "Colo";
 
-  // On hold always wins regardless of PO status
+  // On hold always wins
   if(n.includes("on hold"))
-    return {owner:"hold", swimIdx:-1, label:"On hold", reason: d.holdReason || d.note || "This project is on hold pending an internal decision before work resumes."};
+    return {owner:"hold", swimIdx:-1, label:"On hold",
+      reason: d.holdReason || d.note || "On hold pending an internal decision before work resumes."};
 
-  // Colo approval — only reachable if eng PO was issued and CAD submitted
+  // RFI blocks progress even if PO exists — stuck until response received
+  if(n.includes("rfi"))
+    return {owner:"rfi", swimIdx:1, label:"RFI Outstanding",
+      reason:`An RFI has been issued to ${coloName || "the colo"}. Work is paused until we receive a response.`};
+
+  // Waiting for colo sign-off on CAD / placement
   if(n.includes("waiting for colo") || n.includes("colo approval"))
-    return {owner:"colo", swimIdx:2, label:"With Colo", reason:"CAD layout and coverage plan are submitted to the colo facility, awaiting their sign-off on mounting and placement."};
+    return {owner:"colo", swimIdx:2, label:`With ${coloName}`,
+      reason:`CAD layout and coverage plan submitted to ${coloName}. Awaiting their sign-off on mounting and placement.`};
 
-  // GATE: Security 101 cannot be assigned unless an engineering PO has been issued
-  // If no eng PO, site stays With CoreWeave regardless of note content
-  if(d.engPoIssued){
-    return {owner:"s101", swimIdx:1, label:"With Security 101", reason:"Engineering PO issued. Our team is actively building the CAD layout and coverage design."};
-  }
+  // S101 gate: we need BOTH plans received AND an engineering PO to begin work.
+  // If plans are missing that is the blocking dependency — not the PO.
+  const plansReceived = Array.isArray(d.vals) && d.vals[1] > 0;  // vals[1] = "Plans Received"
 
-  // Everything else — no eng PO — stays With CoreWeave
-  return {owner:"coreweave", swimIdx:0, label:"With CoreWeave", reason:"Waiting on CoreWeave to issue an engineering PO before we can begin the layout and design work."};
+  if(plansReceived && d.engPoIssued)
+    return {owner:"s101", swimIdx:1, label:"With Security 101",
+      reason:"Plans received and engineering PO issued. Our team is actively building the CAD layout and coverage design."};
+
+  if(!plansReceived)
+    return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
+      reason:"Waiting on CoreWeave to provide the site plans. Engineering work cannot begin until plans are in hand."};
+
+  // Plans received but no engineering PO yet
+  return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
+    reason:"Plans received. Waiting on CoreWeave to issue the engineering PO before we can begin the layout and design work."};
 }
 
 function buildData(raw){
@@ -242,13 +259,13 @@ let DATA = buildData(RAW);
 document.getElementById('list').innerHTML = `<div style="padding:60px;text-align:center;color:var(--text-faint);font-family:var(--mono);font-size:13px;">Loading site data from Google Sheets&hellip;</div>`;
 
 const STAT_DEFS = [
-  {key:"coreweave", label:"With CoreWeave", filter:d=>d.owner==="coreweave" && !d.cancelled},
-  {key:"colo", label:"With Colo", filter:d=>d.owner==="colo" && !d.cancelled},
-  {key:"rfi", label:"RFI Outstanding", filter:d=>(d.note||d.holdReason||'').toLowerCase().includes('rfi') && !d.cancelled},
-  {key:"s101", label:"With Security 101", filter:d=>d.owner==="s101" && !d.cancelled},
-  {key:"hold", label:"On hold", filter:d=>d.owner==="hold" && !d.cancelled},
-  {key:"po", label:"Has a PO issued", filter:d=>(d.engPoIssued===true || d.instPoIssued===true) && !d.cancelled},
-  {key:"cancelled", label:"Cancelled", filter:d=>d.cancelled===true},
+  {key:"coreweave", label:"With CoreWeave",    filter:d=>d.owner==="coreweave" && !d.cancelled},
+  {key:"colo",      label:"With Colo",         filter:d=>d.owner==="colo"       && !d.cancelled},
+  {key:"rfi",       label:"RFI Outstanding",   filter:d=>d.owner==="rfi"        && !d.cancelled},
+  {key:"s101",      label:"With Security 101", filter:d=>d.owner==="s101"       && !d.cancelled},
+  {key:"hold",      label:"On hold",           filter:d=>d.owner==="hold"       && !d.cancelled},
+  {key:"po",        label:"Has a PO issued",   filter:d=>(d.engPoIssued===true||d.instPoIssued===true) && !d.cancelled},
+  {key:"cancelled", label:"Cancelled",         filter:d=>d.cancelled===true},
 ];
 
 let activeStat = null;
