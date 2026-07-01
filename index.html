@@ -185,7 +185,7 @@
     margin-bottom:24px; border-radius:14px; overflow:hidden;
     border:1px solid var(--line); position:relative;
   }
-  #siteMap{ height:340px; background:var(--bg); }
+  #siteMap{ height:340px; background:#0D1118; position:relative; overflow:hidden; }
   .map-section .map-title{
     position:absolute; top:14px; left:14px; z-index:1000;
     font-family:var(--mono); font-size:10px; letter-spacing:0.1em;
@@ -220,23 +220,17 @@
   .site-marker.rfi::before{ box-shadow:0 0 0 0 rgba(220,38,38,1); animation-duration:0.7s !important; }
   .site-marker.rfi::after{ background:var(--truered); box-shadow:0 0 16px 5px rgba(220,38,38,1); }
 
-  /* Leaflet overrides */
-  .leaflet-container{ background:#0D1118 !important; font-family:var(--sans); }
-  .leaflet-popup-content-wrapper{
-    background:var(--panel-2) !important; border:1px solid var(--line) !important;
-    border-radius:10px !important; box-shadow:0 8px 32px rgba(0,0,0,0.6) !important;
-    color:var(--text) !important;
+  /* Map popup */
+  .map-popup{
+    position:absolute; pointer-events:none; z-index:100;
+    background:var(--panel-2); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; min-width:160px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.7); display:none;
   }
-  .leaflet-popup-tip{ background:var(--panel-2) !important; }
-  .leaflet-popup-content{ margin:12px 14px !important; }
-  .popup-site{ font-family:var(--mono); font-weight:700; font-size:13px; margin-bottom:4px; }
-  .popup-colo{ font-size:11px; color:var(--text-dim); margin-bottom:4px; }
-  .popup-status{ font-size:11px; font-family:var(--mono); }
-  .popup-status.coreweave{ color:var(--blue); }
-  .popup-status.s101{ color:var(--truegreen); }
-  .popup-status.colo{ color:var(--trueyellow); }
-  .popup-status.hold{ color:var(--red); }
-  .popup-pct{ font-family:var(--mono); font-size:10px; color:var(--text-faint); margin-top:4px; }
+  .popup-site{ font-family:var(--mono); font-weight:700; font-size:13px; margin-bottom:3px; }
+  .popup-colo{ font-size:11px; color:var(--text-dim); margin-bottom:3px; }
+  .popup-status{ font-size:11px; font-family:var(--mono); font-weight:700; }
+  .popup-pct{ font-family:var(--mono); font-size:10px; color:var(--text-faint); margin-top:3px; }
 
   /* Animated site markers */
   .site-marker{
@@ -283,8 +277,8 @@
   .ml-row.colo .ml-dot{ background:var(--trueyellow); }
   .ml-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 </style>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -596,44 +590,144 @@ function renderList(){
 
 document.getElementById('search').addEventListener('input', e=>{ currentSearch = e.target.value; renderList(); renderSidebar(DATA); });
 
-function initMap(data){
-  if(!window.L || !document.getElementById('siteMap')) return;
-  if(window._siteMap){ window._siteMap.remove(); window._siteMap=null; }
-  const map = L.map('siteMap',{zoomControl:true,scrollWheelZoom:false,attributionControl:false,minZoom:3,maxZoom:10});
-  window._siteMap = map;
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    subdomains:'abc', maxZoom:19,
-    attribution:'&copy; OpenStreetMap contributors'
-  }).addTo(map);
-  // Apply dark theme via CSS filter on the tile pane
-  map.getPane('tilePane').style.filter = 'invert(1) hue-rotate(195deg) saturate(0.6) brightness(0.75)';
-  const bounds=[];
-  data.forEach(d=>{
-    if(!d.lat||!d.lng) return;
-    bounds.push([d.lat,d.lng]);
-    const isRfi=(d.note||'').toLowerCase().includes('rfi');
-    const cls=d.owner==="hold"?"hold":isRfi?"rfi":d.owner==="s101"?"s101":d.owner==="colo"?"colo":"coreweave";
-    const statusLabel=d.owner==="hold"?"On hold":d.owner==="s101"?"With Security 101":d.owner==="colo"?"With Colo":"With CoreWeave";
-    const icon=L.divIcon({className:'',iconSize:[14,14],iconAnchor:[7,7],popupAnchor:[0,-10],html:`<div class="site-marker ${cls}"></div>`});
-    const marker=L.marker([d.lat,d.lng],{icon}).addTo(map);
-    marker.bindPopup(L.popup({closeButton:false,maxWidth:210}).setContent(`
-      <div class="popup-site">${d.site}</div>
-      <div class="popup-colo">${d.colo||""}</div>
-      <div class="popup-status ${cls}">${statusLabel}</div>
-      <div class="popup-pct">${d.owner==="hold"?"On hold":d.pct+"% complete"}</div>
-    `));
-    marker.on('mouseover',function(){this.openPopup();});
-    marker.on('click',function(){scrollToSite(d.site);this.openPopup();});
+const STATUS_COLORS = {
+  coreweave:'#2563EB', s101:'#16A34A', colo:'#EAB308',
+  rfi:'#DC2626', hold:'#EA580C'
+};
+const STATUS_LABELS = {
+  coreweave:'With CoreWeave', s101:'With Security 101',
+  colo:'With Colo', rfi:'RFI Outstanding', hold:'On Hold'
+};
+
+async function initMap(data){
+  const container = document.getElementById('siteMap');
+  if(!container) return;
+  container.innerHTML = "";
+
+  // Add hover popup div
+  const popup = document.createElement('div');
+  popup.className = 'map-popup';
+  popup.id = 'mapPopup';
+  container.appendChild(popup);
+
+  const W = container.offsetWidth || 900;
+  const H = 340;
+
+  const svg = d3.select(container).append('svg')
+    .attr('width','100%').attr('height',H)
+    .style('display','block');
+
+  // Background
+  svg.append('rect').attr('width','100%').attr('height',H).attr('fill','#0D1118');
+
+  // Load US topojson
+  let topo;
+  try {
+    topo = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(r=>r.json());
+  } catch(e) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-faint);font-family:var(--mono);font-size:12px;">Map requires internet connection</div>';
+    return;
+  }
+
+  const states = topojson.feature(topo, topo.objects.states);
+  const nation = topojson.mesh(topo, topo.objects.states, (a,b)=>a!==b);
+
+  const projection = d3.geoAlbersUsa()
+    .fitSize([W, H - 10], states)
+    .translate([W/2, H/2]);
+
+  const path = d3.geoPath().projection(projection);
+
+  // State fills
+  svg.append('g').selectAll('path')
+    .data(states.features)
+    .join('path')
+    .attr('d', path)
+    .attr('fill','#151F35')
+    .attr('stroke','none');
+
+  // State borders
+  svg.append('path')
+    .datum(nation)
+    .attr('d', path)
+    .attr('fill','none')
+    .attr('stroke','#2A3A58')
+    .attr('stroke-width', 0.7);
+
+  // Sites
+  const validSites = data.filter(d => d.lat && d.lng);
+  validSites.forEach(d => {
+    const isRfi = (d.note||'').toLowerCase().includes('rfi');
+    const cls = d.owner==='hold'?'hold':isRfi?'rfi':d.owner==='s101'?'s101':d.owner==='colo'?'colo':'coreweave';
+    const color = STATUS_COLORS[cls];
+    const label = STATUS_LABELS[cls];
+    const coords = projection([d.lng, d.lat]);
+    if(!coords) return;
+    const [x, y] = coords;
+
+    const g = svg.append('g')
+      .attr('transform',`translate(${x},${y})`)
+      .style('cursor','pointer');
+
+    // Outer pulse ring
+    g.append('circle')
+      .attr('r', isRfi ? 14 : 10)
+      .attr('fill', color)
+      .attr('opacity', 0)
+      .attr('class','pulse-ring')
+      .style('animation', `svgPulse ${isRfi?'0.9':'2'}s ease-out infinite`);
+
+    // Core dot
+    g.append('circle')
+      .attr('r', isRfi ? 6 : 5)
+      .attr('fill', color)
+      .attr('stroke','#0D1118')
+      .attr('stroke-width', 1.5)
+      .style('filter', `drop-shadow(0 0 ${isRfi?8:5}px ${color})`);
+
+    // Interactions
+    g.on('mouseover', function(event) {
+      const pop = document.getElementById('mapPopup');
+      pop.innerHTML = `<div class="popup-site">${d.site}</div>
+        <div class="popup-colo">${d.colo||''}</div>
+        <div class="popup-status" style="color:${color}">${label}</div>
+        <div class="popup-pct">${d.pct}% complete</div>`;
+      const rect = container.getBoundingClientRect();
+      let left = x + 14;
+      let top = y - 20;
+      if(left + 180 > W) left = x - 194;
+      if(top < 0) top = y + 14;
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+      pop.style.display = 'block';
+    }).on('mouseout', function() {
+      document.getElementById('mapPopup').style.display = 'none';
+    }).on('click', function() {
+      scrollToSite(d.site);
+    });
   });
-  if(bounds.length) map.fitBounds(bounds,{padding:[30,30]});
+
+  // Inject CSS animation for SVG pulse
+  if(!document.getElementById('svgPulseStyle')){
+    const style = document.createElement('style');
+    style.id = 'svgPulseStyle';
+    style.textContent = `
+      @keyframes svgPulse {
+        0% { r: 4; opacity: 0.8; }
+        80% { r: 18; opacity: 0; }
+        100% { r: 18; opacity: 0; }
+      }
+      .pulse-ring { transform-box: fill-box; transform-origin: center; }
+    `;
+    document.head.appendChild(style);
+  }
 }
 
 renderOwnerStrip();
 renderList();
 renderSidebar(DATA);
 renderColoFilters(DATA);
-// Init map after a short delay so Leaflet is ready
-setTimeout(()=>initMap(DATA), 100);
+setTimeout(()=>initMap(DATA), 150);
 
 const STAGE_HEADERS = ["ENG Proposal","Plans Received","ENG PO","Axis Cam Layout","CAD Done",
   "CAD Submitted (CW)","CAD Submitted (Colo)","Proposal","Proposal PO","Local Office Reviewed"];
