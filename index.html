@@ -53,6 +53,27 @@
   .hdr h1{font-size:24px;font-weight:700;letter-spacing:-0.01em;}
   .hdr .sub{color:var(--text-dim);font-size:13px;margin-top:5px;max-width:600px;}
   .hdr-badges{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+
+  /* HELP BUTTON + MODAL */
+  .help-btn{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--text-dim);cursor:pointer;transition:all .15s ease;letter-spacing:0.04em;}
+  .help-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(63,214,196,0.07);}
+  .help-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,22,0.82);z-index:999;align-items:center;justify-content:center;padding:20px;}
+  .help-overlay.open{display:flex;}
+  .help-modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:720px;max-height:88vh;overflow-y:auto;padding:32px 36px 36px;}
+  .help-modal::-webkit-scrollbar{width:4px;}
+  .help-modal::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px;}
+  .help-modal-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
+  .help-modal-hdr h2{font-size:18px;font-weight:700;letter-spacing:-0.01em;}
+  .help-modal-hdr p{font-size:12px;color:var(--text-dim);margin-top:4px;max-width:520px;}
+  .help-close{background:none;border:1px solid var(--line);border-radius:7px;color:var(--text-faint);font-size:16px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s ease;}
+  .help-close:hover{border-color:var(--truered);color:var(--truered);}
+  .help-section{margin-bottom:22px;}
+  .help-section-title{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  .help-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;}
+  .help-badge{flex-shrink:0;font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;white-space:nowrap;}
+  .help-desc{font-size:12px;color:var(--text-dim);line-height:1.55;}
+  .help-desc strong{color:var(--text);font-weight:600;}
+  .help-tip{background:rgba(63,214,196,0.07);border:1px solid rgba(63,214,196,0.2);border-radius:8px;padding:10px 14px;font-size:11.5px;color:var(--text-dim);line-height:1.55;margin-top:4px;}
   .source-status{display:inline-block;font-family:var(--mono);font-size:10px;color:var(--text-faint);padding:4px 10px;border-radius:6px;border:1px solid var(--line);}
   .source-status.live{color:var(--green);border-color:rgba(91,209,122,0.4);background:rgba(91,209,122,0.08);}
   .source-status.error{color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);}
@@ -164,6 +185,7 @@
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
         <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.3</div>
+        <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
       </div>
     </div>
     <div class="owner-strip" id="ownerStrip"></div>
@@ -183,6 +205,72 @@
     <div class="list" id="list"></div>
     <footer>Security 101 Corporate Engineering Team (CET) &middot; CoreWeave POP National Deployment</footer>
   </main>
+
+  <!-- HELP MODAL -->
+  <div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="help-modal">
+      <div class="help-modal-hdr">
+        <div>
+          <h2>How to Use This Tracker</h2>
+          <p>A live view of Security 101&rsquo;s CoreWeave POP national deployment &mdash; where every site stands and who needs to act next.</p>
+        </div>
+        <button class="help-close" onclick="document.getElementById('helpOverlay').classList.remove('open')">&times;</button>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Status Strip &mdash; top row of tiles</div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(37,99,235,0.12);color:#2563EB;border:1px solid rgba(37,99,235,0.4);">With CoreWeave</span>
+          <div class="help-desc">The ball is in CoreWeave&rsquo;s court. Either site plans have not yet been delivered, or the engineering PO has not been authorized. <strong>Both are required before Security 101 can begin design work.</strong></div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(234,179,8,0.12);color:#EAB308;border:1px solid rgba(234,179,8,0.4);">With Colo</span>
+          <div class="help-desc">CAD layout and coverage design have been submitted to the colocation facility (e.g. Equinix, Digital Realty). <strong>We are waiting on the colo&rsquo;s sign-off on mounting and placement.</strong></div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(220,38,38,0.12);color:#DC2626;border:1px solid rgba(220,38,38,0.4);">RFI Outstanding</span>
+          <div class="help-desc">A Request for Information has been submitted to CoreWeave. <strong>Engineering design is on hold until CoreWeave responds.</strong> RFIs are directed to CoreWeave, not the colo.</div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(22,163,74,0.10);color:#16A34A;border:1px solid rgba(22,163,74,0.4);">With Security 101</span>
+          <div class="help-desc">Site plans and engineering PO are both in hand. <strong>Our team is actively developing the CAD layout and coverage design.</strong></div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(234,88,12,0.10);color:#EA580C;border:1px solid rgba(234,88,12,0.4);">On Hold</span>
+          <div class="help-desc">Work is paused pending an internal decision. The hold reason is noted on the site card.</div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(91,209,122,0.10);color:#5BD17A;border:1px solid rgba(91,209,122,0.4);">Has a PO Issued</span>
+          <div class="help-desc">At least one PO (engineering or installation) has been issued for this site. <strong>Click to filter only sites with active POs.</strong></div>
+        </div>
+        <div class="help-tip">Click any tile to filter the site list to that status. Click again &mdash; or use the &times; chip that appears &mdash; to clear the filter.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Colo Filter Bar</div>
+        <div class="help-desc" style="margin-bottom:8px;">Buttons across the top show every colocation provider in the program with a site count. <strong>Click a provider to filter all sites to that colo.</strong> Useful for quickly seeing how many sites are pending with Equinix vs. Digital Realty, etc. The sidebar tiles update to match.</div>
+        <div class="help-tip">Equinix, Digital Realty, CoreSite, Westin Building Exchange, DataBank, QTS, STACK Infrastructure, and Switch are the colo providers across all 20 POP sites.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Site Cards</div>
+        <div class="help-desc" style="margin-bottom:8px;">Each card shows one POP site. The <strong>colored badge</strong> (top right) is the current status. Below the site name you&rsquo;ll see the colo facility in cyan. Proposal numbers and PO status appear below.</div>
+        <div class="help-desc" style="margin-bottom:8px;">The <strong>swimlane</strong> at the bottom of each card shows the five-step deployment process: CoreWeave provides plans &rarr; S101 builds CAD &rarr; Colo/CoreWeave approval &rarr; Local office site walk &rarr; Walk result confirmed. The highlighted node is the current step.</div>
+        <div class="help-desc">The <strong>progress bar</strong> reflects how many of the 10 internal milestone stages are complete.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Left Sidebar</div>
+        <div class="help-desc" style="margin-bottom:8px;">All 20 sites listed alphabetically. The colored square shows completion percentage &mdash; <span style="color:#DC2626;font-weight:600;">red</span> is early stage, <span style="color:#EAB308;font-weight:600;">yellow</span> is mid-progress, <span style="color:#16A34A;font-weight:600;">green</span> is near complete. <strong>HOLD</strong> appears in orange for paused sites.</div>
+        <div class="help-tip">Click any sidebar tile to jump directly to that site&rsquo;s card on the page.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Search</div>
+        <div class="help-desc">Type any site code, city, or site name into the search bar to instantly filter the list.</div>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 
