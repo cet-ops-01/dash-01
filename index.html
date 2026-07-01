@@ -309,11 +309,12 @@
       <div class="map-title">&#9679; CoreWeave POP sites &mdash; live status</div>
       <div id="siteMap"></div>
       <div class="map-legend-float">
-        <div class="ml-row"><div class="ml-dot" style="background:var(--blue)"></div>With CoreWeave</div>
-        <div class="ml-row"><div class="ml-dot" style="background:var(--truegreen)"></div>With Security 101</div>
-        <div class="ml-row"><div class="ml-dot" style="background:var(--trueyellow)"></div>With Colo</div>
-        <div class="ml-row"><div class="ml-dot" style="background:var(--trueorange)"></div>RFI Outstanding</div>
-        <div class="ml-row"><div class="ml-dot" style="background:var(--trueorange)"></div>On hold</div>
+        <div class="ml-row"><div class="ml-dot" style="background:#2563EB"></div>With CoreWeave</div>
+        <div class="ml-row"><div class="ml-dot" style="background:#16A34A"></div>With Security 101</div>
+        <div class="ml-row"><div class="ml-dot" style="background:#EAB308"></div>With Colo</div>
+        <div class="ml-row"><div class="ml-dot" style="background:#DC2626"></div>RFI Outstanding</div>
+        <div class="ml-row"><div class="ml-dot" style="background:#EA580C"></div>On hold</div>
+      </div>
       </div>
     </div>
     <div class="owner-strip" id="ownerStrip"></div>
@@ -600,7 +601,12 @@ function initMap(data){
   if(window._siteMap){ window._siteMap.remove(); window._siteMap=null; }
   const map = L.map('siteMap',{zoomControl:true,scrollWheelZoom:false,attributionControl:false,minZoom:3,maxZoom:10});
   window._siteMap = map;
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    subdomains:'abc', maxZoom:19,
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  // Apply dark theme via CSS filter on the tile pane
+  map.getPane('tilePane').style.filter = 'invert(1) hue-rotate(195deg) saturate(0.6) brightness(0.75)';
   const bounds=[];
   data.forEach(d=>{
     if(!d.lat||!d.lng) return;
