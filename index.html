@@ -270,6 +270,8 @@ const COLO_MAP = {
   "US-HOU01":"Switch"
 };
 
+let activeColo = null;
+
 function pctCls(p){ return p>=70?"hi":p>=25?"mid":"lo"; }
 
 function renderColoFilters(data){
