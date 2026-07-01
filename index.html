@@ -592,17 +592,31 @@ document.getElementById('search').addEventListener('input', e=>{ currentSearch =
 const SITE_COLORS = {coreweave:'#2563EB',s101:'#16A34A',colo:'#EAB308',rfi:'#DC2626',hold:'#EA580C'};
 const SITE_LABELS = {coreweave:'With CoreWeave',s101:'With Security 101',colo:'With Colo',rfi:'RFI Outstanding',hold:'On Hold'};
 
+// Hardcoded site coordinates — map always works regardless of sheet columns
+const FALLBACK_COORDS = {
+  "US-ATL03":[33.7557,-84.3873],"US-CHI01":[41.8504,-87.627],
+  "US-DAL01":[32.7897,-96.8048],"US-DEN01":[39.7416,-104.9873],
+  "Cage 0104":[39.742,-104.9868],"US-LAX01":[34.0504,-118.2536],
+  "US-PHL01":[39.9551,-75.1567],"US-QAS01":[39.0398,-77.4879],
+  "US-SEA01":[47.6167,-122.342],"US-SJC01":[37.2521,-121.8312],
+  "US-UYK01":[40.7904,-74.0585],"US-CHI02":[41.8503,-87.6276],
+  "US-DAL02":[32.79,-96.8058],"US-PDX01":[45.5235,-122.6759],
+  "US-QTS01":[39.5903,-104.8722],"US-SEA02":[47.6162,-122.3425],
+  "US-PLZ03":[33.1584,-96.8246],"US-RNE01":[33.0087,-97.2214],
+  "Alliance Building":[33.0083,-97.2222],"US-HOU01":[29.9978,-95.4113]
+};
+
 function initMap(data){
   const container = document.getElementById('siteMap');
   if(!container) return;
   container.innerHTML = '';
 
-  // Popup
+  // Popup overlay
   const pop = document.createElement('div');
   pop.className = 'map-popup'; pop.id = 'mapPopup';
   container.appendChild(pop);
 
-  const W = container.offsetWidth || 880;
+  const W = Math.max(container.offsetWidth, 600);
   const H = 340;
   const ns = 'http://www.w3.org/2000/svg';
   function mk(tag,attrs){
@@ -618,15 +632,15 @@ function initMap(data){
   // Background
   svg.appendChild(mk('rect',{width:W,height:H,fill:'#0D1118'}));
 
-  // Subtle dot grid
+  // Subtle dot grid via pattern
   const defs=mk('defs');
   const pat=mk('pattern',{id:'mapgrid',width:'28',height:'28',patternUnits:'userSpaceOnUse'});
-  const gc=mk('circle',{cx:'1',cy:'1',r:'0.7',fill:'#1A2540'});
-  pat.appendChild(gc); defs.appendChild(pat);
+  pat.appendChild(mk('circle',{cx:'1',cy:'1',r:'0.7',fill:'#1A2540'}));
+  defs.appendChild(pat);
   svg.appendChild(defs);
   svg.appendChild(mk('rect',{width:W,height:H,fill:'url(#mapgrid)'}));
 
-  // Simple equirectangular projection for continental US
+  // Equirectangular projection for continental US
   function project(lat,lng){
     const mn_lat=23.5,mx_lat=50.5,mn_lng=-127,mx_lng=-65;
     const mg=0.07;
@@ -635,48 +649,55 @@ function initMap(data){
     return [Math.round(x),Math.round(y)];
   }
 
-  // Apply fallback coords and filter
-  const sites = data.map(d=>{
-    if((!d.lat||!d.lng)&&FALLBACK_COORDS[d.site])
-      return {...d,lat:FALLBACK_COORDS[d.site][0],lng:FALLBACK_COORDS[d.site][1]};
-    return d;
-  }).filter(d=>d.lat&&d.lng);
+  // Build status lookup from live data (keyed by site)
+  const statusMap={};
+  data.forEach(d=>{ statusMap[d.site]=d; });
 
-  sites.forEach(d=>{
+  // Always render ALL sites using FALLBACK_COORDS — never wait for sheet lat/lng
+  Object.entries(FALLBACK_COORDS).forEach(([site,coords])=>{
+    const d = statusMap[site] || {site, city:'', owner:'coreweave', note:'', pct:0, colo:'TBD'};
+    const lat=coords[0], lng=coords[1];
     const isRfi=(d.note||'').toLowerCase().includes('rfi');
     const cls=d.owner==='hold'?'hold':isRfi?'rfi':d.owner==='s101'?'s101':d.owner==='colo'?'colo':'coreweave';
     const color=SITE_COLORS[cls];
     const label=SITE_LABELS[cls];
-    const [x,y]=project(d.lat,d.lng);
+    const [x,y]=project(lat,lng);
+
     const g=mk('g',{transform:`translate(${x},${y})`,style:'cursor:pointer'});
 
-    // Pulse ring
+    // Outer pulse ring
     const ring=mk('circle',{r:isRfi?'16':'12',fill:color,opacity:'0'});
     ring.style.animation=`siteGlow ${isRfi?'0.85':'2.2'}s ease-out infinite`;
     g.appendChild(ring);
 
-    // Core dot
+    // Core dot — always visible
     const dot=mk('circle',{r:isRfi?'7':'5',fill:color,stroke:'#0D1118','stroke-width':'1.5'});
+    dot.setAttribute('opacity','1');
     dot.style.filter=`drop-shadow(0 0 ${isRfi?10:6}px ${color})`;
     g.appendChild(dot);
 
+    // City label (small, faint)
+    const lbl=mk('text',{x:'8',y:'4','font-size':'9','font-family':'monospace',fill:'rgba(168,186,208,0.7)'});
+    lbl.textContent=d.site||site;
+    g.appendChild(lbl);
+
     g.addEventListener('mouseenter',()=>{
-      pop.innerHTML=`<div class="popup-site">${d.site}</div>
+      pop.innerHTML=`<div class="popup-site">${site}</div>
         <div class="popup-colo">${d.colo||''}</div>
         <div class="popup-status" style="color:${color}">${label}</div>
-        <div class="popup-pct">${d.pct}% complete</div>`;
-      let left=x+16,top=y-30;
+        <div class="popup-pct">${d.pct||0}% complete</div>`;
+      let left=x+14, top=y-30;
       if(left+190>W) left=x-206;
       if(top<0) top=y+16;
       if(top+90>H) top=H-95;
       pop.style.cssText=`display:block;left:${left}px;top:${top}px`;
     });
     g.addEventListener('mouseleave',()=>{ pop.style.display='none'; });
-    g.addEventListener('click',()=>scrollToSite(d.site));
+    g.addEventListener('click',()=>scrollToSite(site));
     svg.appendChild(g);
   });
 
-  // Keyframe CSS (inject once)
+  // CSS keyframes (inject once)
   if(!document.getElementById('siteGlowKF')){
     const s=document.createElement('style');
     s.id='siteGlowKF';
