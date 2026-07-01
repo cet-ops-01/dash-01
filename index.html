@@ -218,10 +218,10 @@ function deriveOwner(d){
     return {owner:"hold", swimIdx:-1, label:"On hold",
       reason: d.holdReason || d.note || "On hold pending an internal decision before work resumes."};
 
-  // RFI blocks progress even if PO exists — stuck until response received
+  // RFI blocks progress — RFIs go to CoreWeave, not the colo
   if(n.includes("rfi"))
     return {owner:"rfi", swimIdx:1, label:"RFI Outstanding",
-      reason:`An RFI has been issued to ${coloName || "the colo"}. Work is paused until we receive a response.`};
+      reason:`An RFI has been submitted to CoreWeave. Engineering design is on hold pending CoreWeave's response.`};
 
   // Waiting for colo sign-off on CAD / placement
   if(n.includes("waiting for colo") || n.includes("colo approval"))
@@ -229,20 +229,19 @@ function deriveOwner(d){
       reason:`CAD layout and coverage plan submitted to ${coloName}. Awaiting their sign-off on mounting and placement.`};
 
   // S101 gate: we need BOTH plans received AND an engineering PO to begin work.
-  // If plans are missing that is the blocking dependency — not the PO.
   const plansReceived = Array.isArray(d.vals) && d.vals[1] > 0;  // vals[1] = "Plans Received"
 
   if(plansReceived && d.engPoIssued)
     return {owner:"s101", swimIdx:1, label:"With Security 101",
-      reason:"Plans received and engineering PO issued. Our team is actively building the CAD layout and coverage design."};
+      reason:"Site plans and engineering PO received. Our team is actively developing the CAD layout and coverage design."};
 
   if(!plansReceived)
     return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
-      reason:"Waiting on CoreWeave to provide the site plans. Engineering work cannot begin until plans are in hand."};
+      reason:"Pending site plan delivery from CoreWeave. Engineering design will begin once site plans and engineering PO are both in place."};
 
-  // Plans received but no engineering PO yet
+  // Plans in hand, PO not yet authorized
   return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
-    reason:"Plans received. Waiting on CoreWeave to issue the engineering PO before we can begin the layout and design work."};
+    reason:"Site plans received. Engineering design is pending CoreWeave engineering PO authorization."};
 }
 
 function buildData(raw){
