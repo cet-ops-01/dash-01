@@ -199,6 +199,7 @@
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
         <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.3</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
+        <button class="help-btn" id="snapBtn" onclick="generateSnapshot()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Download a self-contained HTML snapshot to share with clients">&#8659; Export snapshot</button>
       </div>
     </div>
     <div class="owner-strip" id="ownerStrip"></div>
@@ -716,6 +717,60 @@ async function fetchLiveData(){
     setSourceStatus("error");
   }
 }
+function generateSnapshot(){
+  if(!DATA || DATA.length===0){
+    alert('No data loaded yet. Wait for the live feed to sync before exporting a snapshot.');
+    return;
+  }
+  const ts = new Date();
+  const tsLabel = ts.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+  const dateSlug = ts.toISOString().slice(0,10);
+
+  // Get the full page HTML
+  let snap = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+  // 1. Freeze the data: replace RAW=[] with the current processed DATA baked in
+  snap = snap.replace(
+    'const RAW = [];',
+    `const RAW = []; // SNAPSHOT — data frozen from live feed\nconst _SNAP = ${JSON.stringify(DATA)};`
+  );
+
+  // 2. Override buildData(RAW) to return the frozen snapshot
+  snap = snap.replace(
+    'let DATA = buildData(RAW);',
+    'let DATA = _SNAP;'
+  );
+
+  // 3. Disable live fetch — replace the call and the function body
+  snap = snap.replace(
+    'fetchLiveData();',
+    '// fetchLiveData() disabled in snapshot'
+  );
+
+  // 4. Stamp the source status badge as a snapshot
+  snap = snap.replace(
+    'id="sourceStatus" class="source-status">Loading\u2026',
+    `id="sourceStatus" class="source-status" style="color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);">Snapshot \u2014 ${tsLabel}`
+  );
+
+  // 5. Add a snapshot notice banner right after <body>
+  const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:8px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.04em;text-align:center;">
+    SNAPSHOT EXPORT &mdash; Data frozen as of ${tsLabel} &mdash; Not connected to live feed
+  </div>`;
+  snap = snap.replace('<div class="layout">', banner + '\n<div class="layout">');
+
+  // 6. Remove the export button itself from the snapshot
+  snap = snap.replace(/<button[^>]*id="snapBtn"[^>]*>.*?<\/button>/s, '');
+
+  // Trigger download
+  const blob = new Blob([snap], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `CoreWeave-POP-Tracker-Snapshot-${dateSlug}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 fetchLiveData();
 
 </script>
