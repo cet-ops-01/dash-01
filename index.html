@@ -157,6 +157,7 @@
   .prop-val{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:5px;}
   .po-pill{display:inline-block;margin-top:7px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:0.04em;padding:3px 8px;border-radius:5px;text-transform:uppercase;}
   .po-pill.po-yes{color:var(--green);background:rgba(91,209,122,0.1);border:1px solid rgba(91,209,122,0.4);}
+  .po-pill.po-sub{color:var(--amber);background:rgba(240,194,60,0.08);border:1px solid rgba(240,194,60,0.35);}
   .po-pill.po-no{color:var(--text-faint);background:rgba(124,141,166,0.08);border:1px solid var(--line);}
   .swim{position:relative;padding-top:6px;margin-bottom:4px;}
   .swim-track{display:grid;grid-template-columns:repeat(5,1fr);position:relative;}
@@ -248,15 +249,15 @@
         <div class="help-section-title">Status Strip &mdash; top row of tiles</div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(37,99,235,0.12);color:#2563EB;border:1px solid rgba(37,99,235,0.4);">With CoreWeave</span>
-          <div class="help-desc">The ball is in CoreWeave&rsquo;s court. Either site plans have not yet been delivered, or the engineering PO has not been authorized. <strong>Both are required before Security 101 can begin design work.</strong></div>
+          <div class="help-desc">The ball is in CoreWeave&rsquo;s court. Either site plans have not yet been delivered, or the engineering PO has not been authorized. <strong>Both plans and an engineering PO are required before Security 101 can begin design work.</strong> The card will specify which dependency is outstanding.</div>
         </div>
         <div class="help-row">
-          <span class="help-badge" style="background:rgba(234,179,8,0.12);color:#EAB308;border:1px solid rgba(234,179,8,0.4);">With Colo</span>
-          <div class="help-desc">CAD layout and coverage design have been submitted to the colocation facility (e.g. Equinix, Digital Realty). <strong>We are waiting on the colo&rsquo;s sign-off on mounting and placement.</strong></div>
+          <span class="help-badge" style="background:rgba(234,179,8,0.12);color:#EAB308;border:1px solid rgba(234,179,8,0.4);">With [Colo Name]</span>
+          <div class="help-desc">CAD layout and coverage design have been submitted to the specific colocation facility. The badge names the actual colo &mdash; <strong>With Equinix, With Digital Realty, With CoreSite</strong>, etc. We are waiting on that facility&rsquo;s sign-off on mounting and placement before the local office can proceed.</div>
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(220,38,38,0.12);color:#DC2626;border:1px solid rgba(220,38,38,0.4);">RFI Outstanding</span>
-          <div class="help-desc">A Request for Information has been submitted to CoreWeave. <strong>Engineering design is on hold until CoreWeave responds.</strong> RFIs are directed to CoreWeave, not the colo.</div>
+          <div class="help-desc">A Request for Information has been submitted to <strong>CoreWeave</strong>. RFIs are always directed to CoreWeave, not the colo. Engineering design is on hold until CoreWeave responds. <strong>Click the RFI badge on any card to read the exact question on file.</strong></div>
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(22,163,74,0.10);color:#16A34A;border:1px solid rgba(22,163,74,0.4);">With Security 101</span>
@@ -264,37 +265,49 @@
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(234,88,12,0.10);color:#EA580C;border:1px solid rgba(234,88,12,0.4);">On Hold</span>
-          <div class="help-desc">Work is paused pending an internal decision. The hold reason is noted on the site card.</div>
+          <div class="help-desc">Work is paused pending an internal decision. The specific hold reason is noted on the site card.</div>
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(91,209,122,0.10);color:#5BD17A;border:1px solid rgba(91,209,122,0.4);">Has a PO Issued</span>
-          <div class="help-desc">At least one PO (engineering or installation) has been issued for this site. <strong>Click to filter only sites with active POs.</strong></div>
+          <div class="help-desc">At least one PO &mdash; engineering or installation &mdash; has been issued for this site. Click to filter to only those sites.</div>
         </div>
-        <div class="help-tip">Click any tile to filter the site list to that status. Click again &mdash; or use the &times; chip that appears &mdash; to clear the filter.</div>
+        <div class="help-tip">Click any tile to filter the site list to that status. Click the tile again &mdash; or the &times; Clear filter chip &mdash; to reset.</div>
       </div>
 
       <div class="help-section">
         <div class="help-section-title">Colo Filter Bar</div>
-        <div class="help-desc" style="margin-bottom:8px;">Buttons across the top show every colocation provider in the program with a site count. <strong>Click a provider to filter all sites to that colo.</strong> Useful for quickly seeing how many sites are pending with Equinix vs. Digital Realty, etc. The sidebar tiles update to match.</div>
-        <div class="help-tip">Equinix, Digital Realty, CoreSite, Westin Building Exchange, DataBank, QTS, STACK Infrastructure, and Switch are the colo providers across all 20 POP sites.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Buttons below the status strip show every colocation provider in the program with a site count. <strong>Click any provider to filter the list to only those sites.</strong> This makes it easy to see at a glance how many sites are waiting on Equinix, how many are with Digital Realty, and so on.</div>
+        <div class="help-tip">Colo providers across the 20-site program: Equinix &middot; Digital Realty &middot; CoreSite &middot; Westin Building Exchange &middot; DataBank &middot; QTS &middot; STACK Infrastructure &middot; Switch</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">RFI Questions</div>
+        <div class="help-desc" style="margin-bottom:8px;">Sites with an active RFI show a clickable <strong style="color:#DC2626;">RFI Outstanding &mdash; click to view</strong> badge. Clicking it opens a popup with the exact question submitted to CoreWeave. Current open RFIs: ATL03, CHI01, CHI02, UYK01.</div>
+        <div class="help-tip">RFIs are always issued to CoreWeave. The colo is not involved until CoreWeave resolves the question and confirms the correct plans.</div>
       </div>
 
       <div class="help-section">
         <div class="help-section-title">Site Cards</div>
-        <div class="help-desc" style="margin-bottom:8px;">Each card shows one POP site. The <strong>colored badge</strong> (top right) is the current status. Below the site name you&rsquo;ll see the colo facility in cyan. Proposal numbers and PO status appear below.</div>
-        <div class="help-desc" style="margin-bottom:8px;">The <strong>swimlane</strong> at the bottom of each card shows the five-step deployment process: CoreWeave provides plans &rarr; S101 builds CAD &rarr; Colo/CoreWeave approval &rarr; Local office site walk &rarr; Walk result confirmed. The highlighted node is the current step.</div>
-        <div class="help-desc">The <strong>progress bar</strong> reflects how many of the 10 internal milestone stages are complete.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Each card represents one POP site. The <strong>colored status badge</strong> (top right) shows who currently holds the action. Below the site name, the <strong>colo facility is shown in cyan</strong> &mdash; this is the specific data center, not a generic label.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the five-step deployment process: CoreWeave provides plans &rarr; S101 builds CAD &rarr; Colo or CoreWeave approval &rarr; Local office site walk &rarr; Walk result confirmed. The active step is highlighted.</div>
+        <div class="help-desc">The <strong>progress bar</strong> reflects completion across 10 internal milestone checkpoints tracked in the program spreadsheet.</div>
       </div>
 
       <div class="help-section">
         <div class="help-section-title">Left Sidebar</div>
-        <div class="help-desc" style="margin-bottom:8px;">All 20 sites listed alphabetically. The colored square shows completion percentage &mdash; <span style="color:#DC2626;font-weight:600;">red</span> is early stage, <span style="color:#EAB308;font-weight:600;">yellow</span> is mid-progress, <span style="color:#16A34A;font-weight:600;">green</span> is near complete. <strong>HOLD</strong> appears in orange for paused sites.</div>
-        <div class="help-tip">Click any sidebar tile to jump directly to that site&rsquo;s card on the page.</div>
+        <div class="help-desc" style="margin-bottom:8px;">All 20 sites listed alphabetically. The colored tile shows the completion percentage &mdash; <span style="color:#DC2626;font-weight:600;">red</span> early stage, <span style="color:#EAB308;font-weight:600;">yellow</span> mid-progress, <span style="color:#16A34A;font-weight:600;">green</span> near complete, <span style="color:#EA580C;font-weight:600;">HOLD</span> paused. The sidebar updates automatically when a colo or status filter is active.</div>
+        <div class="help-tip">Click any sidebar tile to jump directly to that site&rsquo;s card.</div>
       </div>
 
       <div class="help-section">
         <div class="help-section-title">Search</div>
-        <div class="help-desc">Type any site code, city, or site name into the search bar to instantly filter the list.</div>
+        <div class="help-desc">Type any site code, city, colo provider, or site name to instantly filter the card list.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Export Snapshot</div>
+        <div class="help-desc" style="margin-bottom:8px;">The <strong>&darr; Export snapshot</strong> button in the header generates a self-contained HTML file with all current data frozen at that moment. The exported file works completely offline &mdash; no spreadsheet connection, no live link, no URL to expose.</div>
+        <div class="help-tip">Share the snapshot file directly with clients or stakeholders. It includes a timestamp banner and retains full filter, search, and RFI functionality. The live tracker continues updating independently.</div>
       </div>
     </div>
   </div>
@@ -557,10 +570,10 @@ function fmtProp(num){
 function proposalHTML(d){
   const engNum = fmtProp(d.eng);
   const instNum = fmtProp(d.po);
-  const engPoCls = d.engPoIssued ? "po-yes" : "po-no";
-  const engPoLabel = d.engPoIssued ? "PO Issued" : "No PO";
-  const instPoCls = d.instPoIssued ? "po-yes" : "po-no";
-  const instPoLabel = d.instPoIssued ? "PO Issued" : "No PO";
+  const engPoCls = d.engPoIssued ? "po-yes" : d.engSubmitted ? "po-sub" : "po-no";
+  const engPoLabel = d.engPoIssued ? "PO Issued" : d.engSubmitted ? "Submitted — Awaiting PO" : "Not yet submitted";
+  const instPoCls = d.instPoIssued ? "po-yes" : d.instSubmitted ? "po-sub" : "po-no";
+  const instPoLabel = d.instPoIssued ? "PO Issued" : d.instSubmitted ? "Submitted — Awaiting PO" : "Not yet submitted";
   return `<div class="proposals">
       <div class="prop-chip">
         <div class="prop-label">Engineering proposal <span class="prop-hint">(design scope)</span></div>
@@ -670,8 +683,10 @@ function rowToRaw(f){
     loc: String(f["Address"]||""),
     eng: f["Eng Proposal #"]?String(f["Eng Proposal #"]):"",
     engPoIssued: String(f["Eng PO Status"]||"").trim()==="PO Issued",
+    engSubmitted: String(f["Eng PO Status"]||"").trim()==="PO Issued" || String(f["Eng Submitted"]||"").toLowerCase().includes("y"),
     po: f["Install Proposal #"]?String(f["Install Proposal #"]):"",
     instPoIssued: String(f["Install PO Status"]||"").trim()==="PO Issued",
+    instSubmitted: String(f["Install PO Status"]||"").trim()==="PO Issued" || String(f["Install Submitted"]||"").toLowerCase().includes("y"),
     vals: STAGE_HEADERS.map(h=>Number(f[h])||0),
     note: String(f["Notes / Hold Reason"]||""),
     holdReason: String(f["Notes / Hold Reason"]||""),
@@ -754,8 +769,8 @@ function generateSnapshot(){
   );
 
   // 5. Add a snapshot notice banner right after <body>
-  const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:8px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.04em;text-align:center;">
-    SNAPSHOT EXPORT &mdash; Data frozen as of ${tsLabel} &mdash; Not connected to live feed
+  const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:7px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.06em;text-align:center;">
+    SNAPSHOT &mdash; ${tsLabel} ${Intl.DateTimeFormat().resolvedOptions().timeZone} &mdash; OFFLINE / NO LIVE DATA
   </div>`;
   snap = snap.replace('<div class="layout">', banner + '\n<div class="layout">');
 
