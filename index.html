@@ -55,6 +55,28 @@
   .hdr-badges{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
 
   /* HELP BUTTON + MODAL */
+  /* EXPORT MODAL */
+  .exp-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,22,0.85);z-index:1001;align-items:center;justify-content:center;padding:20px;}
+  .exp-overlay.open{display:flex;}
+  .exp-modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;padding:28px 32px 32px;}
+  .exp-modal h2{font-size:17px;font-weight:700;margin-bottom:6px;}
+  .exp-modal .sub{font-size:12px;color:var(--text-dim);margin-bottom:22px;}
+  .exp-section-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;}
+  .exp-type-row{display:flex;gap:10px;margin-bottom:20px;}
+  .exp-type-btn{flex:1;padding:12px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;}
+  .exp-type-btn:hover{border-color:var(--text-faint);color:var(--text);}
+  .exp-type-btn.active{border-color:var(--cyan);background:rgba(63,214,196,0.1);color:var(--cyan);}
+  #exportColoSection{display:none;margin-bottom:20px;}
+  .exp-colo-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+  .exp-colo-btn{font-family:var(--mono);font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--text-dim);cursor:pointer;transition:all .15s;}
+  .exp-colo-btn:hover{border-color:var(--text-faint);color:var(--text);}
+  .exp-colo-btn.active{border-color:var(--trueyellow);background:rgba(234,179,8,0.1);color:var(--trueyellow);}
+  .exp-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;border-top:1px solid var(--line);padding-top:18px;}
+  .exp-cancel{background:none;border:1px solid var(--line);border-radius:8px;color:var(--text-faint);font-size:13px;padding:8px 18px;cursor:pointer;}
+  .exp-cancel:hover{border-color:var(--text-dim);color:var(--text);}
+  .exp-go{background:var(--cyan);border:none;border-radius:8px;color:#0F1520;font-size:13px;font-weight:700;padding:8px 22px;cursor:pointer;}
+  .exp-go:hover{opacity:0.9;}
+
   /* RFI MODAL */
   .rfi-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,22,0.85);z-index:1000;align-items:center;justify-content:center;padding:20px;}
   .rfi-overlay.open{display:flex;}
@@ -198,9 +220,9 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.4</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.5</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
-        <button class="help-btn" id="snapBtn" onclick="generateSnapshot()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Download a self-contained HTML snapshot to share with clients">&#8659; Export snapshot</button>
+        <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
     </div>
     <div class="owner-strip" id="ownerStrip"></div>
@@ -220,6 +242,34 @@
     <div class="list" id="list"></div>
     <footer>Security 101 Corporate Engineering Team (CET) &middot; CoreWeave POP National Deployment</footer>
   </main>
+
+  <!-- EXPORT MODAL -->
+  <div class="exp-overlay" id="exportOverlay" onclick="if(event.target===this)closeExportModal()">
+    <div class="exp-modal">
+      <h2>Export Snapshot</h2>
+      <p class="sub">This tracker is internal. Choose who this export is for — the output will be tailored accordingly.</p>
+
+      <div class="exp-section-lbl">Who is this for?</div>
+      <div class="exp-type-row">
+        <button class="exp-type-btn" data-type="coreweave" onclick="selectExportType('coreweave')">
+          CoreWeave<br><span style="font-size:11px;font-weight:400;opacity:0.7;">Full tracker — all sites, all data</span>
+        </button>
+        <button class="exp-type-btn" data-type="colo" onclick="selectExportType('colo')">
+          Colo Facility<br><span style="font-size:11px;font-weight:400;opacity:0.7;">Filtered — no internal proposal data</span>
+        </button>
+      </div>
+
+      <div id="exportColoSection">
+        <div class="exp-section-lbl">Select colo(s) to include</div>
+        <div class="exp-colo-grid" id="exportColoButtons"></div>
+      </div>
+
+      <div class="exp-actions">
+        <button class="exp-cancel" onclick="closeExportModal()">Cancel</button>
+        <button class="exp-go" onclick="runExport()">Generate &amp; Download</button>
+      </div>
+    </div>
+  </div>
 
   <!-- RFI MODAL -->
   <div class="rfi-overlay" id="rfiOverlay" onclick="if(event.target===this)this.classList.remove('open')">
@@ -305,9 +355,35 @@
       </div>
 
       <div class="help-section">
+        <div class="help-section-title">Proposal Submission Status</div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(91,209,122,0.10);color:#5BD17A;border:1px solid rgba(91,209,122,0.4);">PO Issued</span>
+          <div class="help-desc">The proposal was submitted to CoreWeave and approved. The PO is the approval — no separate confirmation needed.</div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(240,194,60,0.08);color:#F0C23C;border:1px solid rgba(240,194,60,0.35);">Submitted — Awaiting PO</span>
+          <div class="help-desc">The proposal has been formally submitted to CoreWeave. Waiting on their authorization and PO issuance.</div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(124,141,166,0.08);color:#6882A0;border:1px solid #2E3F5C;">Not yet submitted</span>
+          <div class="help-desc">The proposal exists internally but has not been submitted to CoreWeave. <strong>CoreWeave has not seen this proposal.</strong></div>
+        </div>
+        <div class="help-tip">Each site card shows this status separately for the Engineering proposal and the Installation proposal.</div>
+      </div>
+
+      <div class="help-section">
         <div class="help-section-title">Export Snapshot</div>
-        <div class="help-desc" style="margin-bottom:8px;">The <strong>&darr; Export snapshot</strong> button in the header generates a self-contained HTML file with all current data frozen at that moment. The exported file works completely offline &mdash; no spreadsheet connection, no live link, no URL to expose.</div>
-        <div class="help-tip">Share the snapshot file directly with clients or stakeholders. It includes a timestamp banner and retains full filter, search, and RFI functionality. The live tracker continues updating independently.</div>
+        <div class="help-desc" style="margin-bottom:8px;">This tracker runs live within the Security 101 network. It is an internal tool — the URL is not distributed externally. The <strong>Export Snapshot</strong> button exists to enable controlled, purposeful sharing when there is a legitimate need to provide program status to someone outside the organization.</div>
+        <div class="help-desc" style="margin-bottom:8px;">When you click Export Snapshot, you choose who the export is for:</div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(37,99,235,0.12);color:#2563EB;border:1px solid rgba(37,99,235,0.4);">CoreWeave</span>
+          <div class="help-desc">Generates a full snapshot of all 20 sites with complete data. Use this when sharing overall program status with CoreWeave stakeholders.</div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(234,179,8,0.12);color:#EAB308;border:1px solid rgba(234,179,8,0.4);">Colo Facility</span>
+          <div class="help-desc">Opens a colo picker. Select one colo, multiple colos, or any combination. Generates a stripped-down HTML showing only those facilities&rsquo; sites — <strong>no proposal numbers, no PO data, no internal information.</strong> Just site IDs, locations, status, and current standing. The footer reads &ldquo;For [Colo] coordination use only.&rdquo;</div>
+        </div>
+        <div class="help-tip">The exported file is self-contained and works completely offline. The recipient does not need to be on the Security 101 network, have domain access, or connect to anything. Everything they see is frozen in that file at the moment of export. Nothing beyond what you chose to include is accessible to them.</div>
       </div>
     </div>
   </div>
@@ -732,56 +808,147 @@ async function fetchLiveData(){
     setSourceStatus("error");
   }
 }
-function generateSnapshot(){
-  if(!DATA || DATA.length===0){
-    alert('No data loaded yet. Wait for the live feed to sync before exporting a snapshot.');
+// ── EXPORT SYSTEM ──────────────────────────────────────────────────────────
+
+function openExportModal(){
+  if(!DATA||DATA.length===0){
+    alert('No data loaded yet. Wait for the live feed to sync before exporting.');
     return;
   }
+  document.getElementById('exportOverlay').classList.add('open');
+  // Populate colo buttons
+  const colos = [...new Set(DATA.map(d=>d.colo).filter(c=>c&&c!=='TBD'))].sort();
+  const cb = document.getElementById('exportColoButtons');
+  cb.innerHTML = colos.map(c=>`<button class="exp-colo-btn" data-colo="${c}" onclick="toggleExportColo(this)">${c}</button>`).join('');
+}
+
+function toggleExportColo(btn){
+  btn.classList.toggle('active');
+}
+
+function selectExportType(type){
+  document.querySelectorAll('.exp-type-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.exp-type-btn[data-type="${type}"]`).classList.add('active');
+  document.getElementById('exportColoSection').style.display = type==='colo'?'block':'none';
+}
+
+function closeExportModal(){
+  document.getElementById('exportOverlay').classList.remove('open');
+  document.querySelectorAll('.exp-type-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.exp-colo-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('exportColoSection').style.display='none';
+}
+
+function runExport(){
+  const typeBtn = document.querySelector('.exp-type-btn.active');
+  if(!typeBtn){ alert('Select an export type first.'); return; }
+  const type = typeBtn.dataset.type;
+  if(type==='coreweave'){
+    generateCoreWeaveSnapshot();
+  } else {
+    const selected = [...document.querySelectorAll('.exp-colo-btn.active')].map(b=>b.dataset.colo);
+    if(selected.length===0){ alert('Select at least one colo to export.'); return; }
+    generateColoSnapshot(selected);
+  }
+  closeExportModal();
+}
+
+// CoreWeave full snapshot — existing logic
+function generateCoreWeaveSnapshot(){
   const ts = new Date();
   const tsLabel = ts.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
   const dateSlug = ts.toISOString().slice(0,10);
-
-  // Get the full page HTML
   let snap = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  snap = snap.replace('const RAW = [];',`const RAW = [];\nconst _SNAP = ${JSON.stringify(DATA)};`);
+  snap = snap.replace('let DATA = buildData(RAW);','let DATA = _SNAP;');
+  snap = snap.replace('fetchLiveData();','// snapshot — no live feed');
+  snap = snap.replace('id="sourceStatus" class="source-status">Loading\u2026',
+    `id="sourceStatus" class="source-status" style="color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);">Snapshot \u2014 ${tsLabel}`);
+  const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:7px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.06em;text-align:center;">SNAPSHOT OF POP TRACKER &mdash; ${tsLabel} &middot; ${Intl.DateTimeFormat().resolvedOptions().timeZone}</div>`;
+  snap = snap.replace('<div class="layout">', banner+'\n<div class="layout">');
+  snap = snap.replace(/<button[^>]*id="snapBtn"[^>]*>[\s\S]*?<\/button>/,'');
+  _download(snap, `CW-POP-Snapshot-${dateSlug}.html`);
+}
 
-  // 1. Freeze the data: replace RAW=[] with the current processed DATA baked in
-  snap = snap.replace(
-    'const RAW = [];',
-    `const RAW = []; // SNAPSHOT — data frozen from live feed\nconst _SNAP = ${JSON.stringify(DATA)};`
-  );
+// Colo snapshot — stripped, only colo-relevant info
+function generateColoSnapshot(selectedColos){
+  const ts = new Date();
+  const tsLabel = ts.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const dateSlug = ts.toISOString().slice(0,10);
+  const coloLabel = selectedColos.join(', ');
+  const sites = DATA.filter(d=>selectedColos.includes(d.colo) && !d.cancelled);
 
-  // 2. Override buildData(RAW) to return the frozen snapshot
-  snap = snap.replace(
-    'let DATA = buildData(RAW);',
-    'let DATA = _SNAP;'
-  );
+  const STATUS_COLOR = {coreweave:'#2563EB',colo:'#EAB308',rfi:'#DC2626',s101:'#16A34A',hold:'#EA580C'};
+  const STATUS_LABEL = {
+    coreweave:'With CoreWeave', colo:'With '+coloLabel,
+    rfi:'RFI Outstanding', s101:'With Security 101', hold:'On Hold'
+  };
 
-  // 3. Disable live fetch — replace the call and the function body
-  snap = snap.replace(
-    'fetchLiveData();',
-    '// fetchLiveData() disabled in snapshot'
-  );
+  const rows = sites.map(d=>{
+    const color = STATUS_COLOR[d.owner]||'#6882A0';
+    const label = d.ownerLabel||STATUS_LABEL[d.owner]||d.owner;
+    const reason = d.reason||'';
+    return `<tr>
+      <td><strong>${d.site}</strong></td>
+      <td>${d.city||''}, ${d.state||''}</td>
+      <td>${d.addr||''}</td>
+      <td><span style="display:inline-block;padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;background:${color}22;color:${color};border:1px solid ${color}66;">${label}</span></td>
+      <td style="font-size:11px;color:#A8BAD0;">${reason}</td>
+    </tr>`;
+  }).join('');
 
-  // 4. Stamp the source status badge as a snapshot
-  snap = snap.replace(
-    'id="sourceStatus" class="source-status">Loading\u2026',
-    `id="sourceStatus" class="source-status" style="color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);">Snapshot \u2014 ${tsLabel}`
-  );
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CoreWeave POP — ${coloLabel} Site Status</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#0F1520;color:#F2F6FC;font-family:-apple-system,BlinkMacSystemFont,"Inter",sans-serif;padding:0;}
+  .banner{background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:8px 32px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.06em;text-align:center;}
+  .wrap{max-width:1000px;margin:0 auto;padding:36px 32px 60px;}
+  .hdr{margin-bottom:28px;border-bottom:1px solid #2E3F5C;padding-bottom:20px;}
+  .eyebrow{font-family:monospace;font-size:10px;letter-spacing:0.16em;color:#6882A0;text-transform:uppercase;margin-bottom:8px;}
+  h1{font-size:22px;font-weight:700;}
+  .sub{color:#A8BAD0;font-size:13px;margin-top:5px;}
+  table{width:100%;border-collapse:collapse;margin-top:8px;}
+  th{font-family:monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#6882A0;padding:10px 14px;text-align:left;border-bottom:2px solid #2E3F5C;}
+  td{padding:12px 14px;border-bottom:1px solid #1E2A45;font-size:13px;vertical-align:top;}
+  tr:hover td{background:rgba(255,255,255,0.02);}
+  .count{display:inline-block;font-family:monospace;font-size:10px;color:#6882A0;margin-top:6px;}
+  footer{margin-top:40px;text-align:center;font-family:monospace;font-size:10px;color:#6882A0;}
+</style>
+</head>
+<body>
+<div class="banner">SNAPSHOT OF POP TRACKER &mdash; ${tsLabel} &middot; ${tz} &mdash; ${coloLabel.toUpperCase()}</div>
+<div class="wrap">
+  <div class="hdr">
+    <div class="eyebrow">Security 101 &middot; CoreWeave POP Program</div>
+    <h1>${coloLabel} &mdash; Site Status</h1>
+    <div class="sub">Active sites at ${coloLabel} facilities as of ${tsLabel}. This is a point-in-time snapshot for coordination purposes.</div>
+    <div class="count">${sites.length} site${sites.length!==1?'s':''}</div>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Site</th><th>Location</th><th>Address</th><th>Status</th><th>Current Standing</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <footer>Security 101 Corporate Engineering Team (CET) &middot; Confidential &middot; For ${coloLabel} coordination use only</footer>
+</div>
+</body>
+</html>`;
 
-  // 5. Add a snapshot notice banner right after <body>
-  const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:7px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.06em;text-align:center;">
-    SNAPSHOT &mdash; ${tsLabel} ${Intl.DateTimeFormat().resolvedOptions().timeZone} &mdash; OFFLINE / NO LIVE DATA
-  </div>`;
-  snap = snap.replace('<div class="layout">', banner + '\n<div class="layout">');
+  _download(html, `CW-POP-${coloLabel.replace(/[^a-zA-Z0-9]/g,'-')}-${dateSlug}.html`);
+}
 
-  // 6. Remove the export button itself from the snapshot
-  snap = snap.replace(/<button[^>]*id="snapBtn"[^>]*>.*?<\/button>/s, '');
-
-  // Trigger download
-  const blob = new Blob([snap], {type:'text/html;charset=utf-8'});
+function _download(html, filename){
+  const blob = new Blob([html],{type:'text/html;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `CoreWeave-POP-Tracker-Snapshot-${dateSlug}.html`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
 }
