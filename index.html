@@ -220,7 +220,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.5</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.6</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -869,11 +869,17 @@ function generateCoreWeaveSnapshot(){
     `id="sourceStatus" class="source-status" style="color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);">Snapshot \u2014 ${tsLabel}`);
   const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:7px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.06em;text-align:center;">SNAPSHOT OF POP TRACKER &mdash; ${tsLabel} &middot; ${Intl.DateTimeFormat().resolvedOptions().timeZone}</div>`;
   snap = snap.replace('<div class="layout">', banner+'\n<div class="layout">');
-  snap = snap.replace(/<button[^>]*id="snapBtn"[^>]*>[\s\S]*?<\/button>/,'');
+  snap = snap.replace(/style="color:var\(--blue\);border-color:rgba\(37,99,235,0\.4\);background:rgba\(37,99,235,0\.07\);">v4\.\d+<\/div>/,
+    'style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.6 — CoreWeave</div>');
   // Strip any open modal states
   snap = snap.replace(/class="exp-overlay open"/g,'class="exp-overlay"');
   snap = snap.replace(/class="help-overlay open"/g,'class="help-overlay"');
   snap = snap.replace(/class="rfi-overlay open"/g,'class="rfi-overlay"');
+  // CoreWeave snapshot: remove the CoreWeave export type button — they can only export to colos
+  snap = snap.replace(/<button class="exp-type-btn" data-type="coreweave"[\s\S]*?<\/button>/,'');
+  // Auto-select colo type since it's the only option
+  snap = snap.replace('function openExportModal(){',
+    'function openExportModal(){\n  selectExportType(\'colo\');');
   _download(snap, `CW-POP-Snapshot-${dateSlug}.html`);
 }
 
