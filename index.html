@@ -843,14 +843,17 @@ function runExport(){
   const typeBtn = document.querySelector('.exp-type-btn.active');
   if(!typeBtn){ alert('Select an export type first.'); return; }
   const type = typeBtn.dataset.type;
-  if(type==='coreweave'){
-    generateCoreWeaveSnapshot();
-  } else {
-    const selected = [...document.querySelectorAll('.exp-colo-btn.active')].map(b=>b.dataset.colo);
-    if(selected.length===0){ alert('Select at least one colo to export.'); return; }
-    generateColoSnapshot(selected);
-  }
+  const selected = type==='colo'
+    ? [...document.querySelectorAll('.exp-colo-btn.active')].map(b=>b.dataset.colo)
+    : [];
+  if(type==='colo'&&selected.length===0){ alert('Select at least one colo to export.'); return; }
+
+  // Close modal FIRST — wait for DOM to settle before capturing outerHTML
   closeExportModal();
+  setTimeout(()=>{
+    if(type==='coreweave') generateCoreWeaveSnapshot();
+    else generateColoSnapshot(selected);
+  }, 80);
 }
 
 // CoreWeave full snapshot — existing logic
@@ -867,6 +870,10 @@ function generateCoreWeaveSnapshot(){
   const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:7px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.06em;text-align:center;">SNAPSHOT OF POP TRACKER &mdash; ${tsLabel} &middot; ${Intl.DateTimeFormat().resolvedOptions().timeZone}</div>`;
   snap = snap.replace('<div class="layout">', banner+'\n<div class="layout">');
   snap = snap.replace(/<button[^>]*id="snapBtn"[^>]*>[\s\S]*?<\/button>/,'');
+  // Strip any open modal states
+  snap = snap.replace(/class="exp-overlay open"/g,'class="exp-overlay"');
+  snap = snap.replace(/class="help-overlay open"/g,'class="help-overlay"');
+  snap = snap.replace(/class="rfi-overlay open"/g,'class="rfi-overlay"');
   _download(snap, `CW-POP-Snapshot-${dateSlug}.html`);
 }
 
