@@ -202,6 +202,11 @@
   .swim-label{font-family:var(--mono);font-size:9.5px;color:var(--text-faint);text-align:center;line-height:1.3;}
   .swim-stop.current .swim-label{color:var(--text);font-weight:700;}
   .swim-stop.past .swim-label{color:var(--text-dim);}
+  .swim-node.g{background:rgba(22,163,74,0.22);border-color:var(--truegreen);color:var(--truegreen);font-weight:700;}
+  .swim-node.y{background:rgba(234,179,8,0.20);border-color:var(--trueyellow);color:var(--trueyellow);font-weight:700;}
+  .swim-node.r{background:rgba(220,38,38,0.28);border-color:var(--truered);color:#fff;font-weight:700;animation:gatePulseRed 1.5s ease-in-out infinite;}
+  @keyframes gatePulseRed{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.55);}50%{box-shadow:0 0 0 7px rgba(220,38,38,0);}}
+
   .hold-strip{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--truered);background:rgba(220,38,38,0.07);border:1px dashed rgba(220,38,38,0.3);border-radius:7px;padding:8px 11px;text-align:center;line-height:1.5;}
   .progress-row{display:flex;align-items:center;gap:12px;margin-top:14px;}
   .progress-track{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden;}
@@ -227,7 +232,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.1</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.2</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -244,6 +249,12 @@
       <span><span class="dot" style="background:var(--trueyellow)"></span>With Colo</span>
       <span><span class="dot" style="background:var(--truered)"></span>RFI Outstanding</span>
       <span><span class="dot" style="background:var(--trueorange)"></span>On hold</span>
+      <span style="opacity:.55">|</span>
+      <span>Gates:</span>
+      <span><span class="dot" style="background:var(--truegreen)"></span>Complete</span>
+      <span><span class="dot" style="background:var(--trueyellow)"></span>Submitted &mdash; awaiting</span>
+      <span><span class="dot" style="background:var(--truered)"></span>Blocked / RFI</span>
+      <span><span class="dot" style="background:var(--line)"></span>Not started</span>
     </div>
     <input type="text" id="search" class="search" placeholder="Search site, city, or site code&hellip;">
     <div class="list" id="list"></div>
@@ -638,15 +649,27 @@ function swimHTML(d){
   if(d.owner==="hold"){
     return `<div class="hold-strip">${d.reason}</div>`;
   }
+  // Traffic-light gate states driven by the sheet 0/5/10 scores:
+  // g = complete (10) | y = submitted / awaiting the other party (5) | r = blocked, RFI outstanding | "" = not started (0)
+  const v = Array.isArray(d.vals) ? d.vals : [0,0,0,0,0,0,0,0,0,0];
+  const wrs = (d.walkResult||"").trim().toLowerCase();
+  const GATE = [
+    (d.engPoIssued || v[2]===10) ? "g" : (v[2]>0 || d.engSubmitted) ? "y" : "",
+    v[1]===10 ? "g" : (d.owner==="rfi") ? "r" : v[1]>0 ? "y" : "",
+    (v[3]===10 && v[4]===10 && v[5]===10) ? "g" : (v[3]>0 || v[4]>0 || v[5]>0) ? "y" : "",
+    v[6]>=5 ? "g" : "",
+    v[6]===10 ? "g" : v[6]===5 ? "y" : "",
+    v[9]===10 ? "g" : v[9]>0 ? "y" : "",
+    (wrs==="all good" || wrs==="co approved") ? "g" : wrs==="co submitted" ? "y" : ""
+  ];
   const stops = SWIM_STOPS.map((s,i)=>{
     let cls = "swim-stop";
-    if(i < d.swimIdx) cls += " past";
-    // Independent gates: stop 0 (PO) and stop 1 (Plans) complete individually
-    if(i===0 && d.engPoIssued && d.swimIdx<=1 && !cls.includes("past") && !cls.includes("current")) cls += " past";
-    if(i===1 && Array.isArray(d.vals) && d.vals[1]>0 && d.swimIdx<=1 && !cls.includes("past") && !cls.includes("current")) cls += " past";
+    const st = GATE[i];
+    if(st==="g") cls += " past";
     if(i === d.swimIdx) cls += " current " + (i===6 ? "decision" : d.owner==="install_ready"?"install_ready":d.owner==="co_change"?"co_change":d.owner);
+    const glyph = st==="g" ? "&#10003;" : (i+1);
     return `<div class="${cls}">
-      <div class="swim-node">${i+1}</div>
+      <div class="swim-node${st ? " "+st : ""}">${glyph}</div>
       <div class="swim-label">${s.label.replace(/\n/g,"<br>")}</div>
     </div>`;
   }).join("");
