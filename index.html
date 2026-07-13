@@ -202,11 +202,16 @@
   .swim-label{font-family:var(--mono);font-size:9.5px;color:var(--text-faint);text-align:center;line-height:1.3;}
   .swim-stop.current .swim-label{color:var(--text);font-weight:700;}
   .swim-stop.past .swim-label{color:var(--text-dim);}
-  .swim-node.g{background:rgba(22,163,74,0.22);border-color:var(--truegreen);color:var(--truegreen);font-weight:700;}
-  .swim-node.y{background:rgba(234,179,8,0.20);border-color:var(--trueyellow);color:var(--trueyellow);font-weight:700;}
-  .swim-node.r{background:rgba(220,38,38,0.28);border-color:var(--truered);color:#fff;font-weight:700;animation:gatePulseRed 1.5s ease-in-out infinite;}
+  .swim-stop .swim-node.g{background:var(--truegreen);border-color:var(--truegreen);color:#fff;font-weight:700;}
+  .swim-stop .swim-node.y{background:var(--trueyellow);border-color:var(--trueyellow);color:#0F1520;font-weight:700;}
+  .swim-stop .swim-node.r{background:var(--truered);border-color:var(--truered);color:#fff;font-weight:700;animation:gatePulseRed 1.5s ease-in-out infinite;}
+  .swim-stop.past .swim-node.g{background:var(--truegreen);border-color:var(--truegreen);color:#fff;}
+  .swim-stop.past .swim-label{color:var(--text-dim);}
   @keyframes gatePulseRed{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.55);}50%{box-shadow:0 0 0 7px rgba(220,38,38,0);}}
 
+  .branch-note{margin-top:10px;font-family:var(--mono);font-size:10.5px;border-radius:7px;padding:8px 11px;text-align:center;line-height:1.5;}
+  .branch-note.scheduled{color:var(--truegreen);background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.35);}
+  .branch-note.change{color:var(--trueorange);background:rgba(234,88,12,0.08);border:1px dashed rgba(234,88,12,0.35);}
   .hold-strip{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--truered);background:rgba(220,38,38,0.07);border:1px dashed rgba(220,38,38,0.3);border-radius:7px;padding:8px 11px;text-align:center;line-height:1.5;}
   .progress-row{display:flex;align-items:center;gap:12px;margin-top:14px;}
   .progress-track{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden;}
@@ -232,7 +237,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.2a</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.2c</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -422,7 +427,7 @@ const SWIM_STOPS = [
   {key:"s101",      label:"Submitted\nto Colo"},
   {key:"colo",      label:"Colo\nApproval"},
   {key:"s101",      label:"Local Office\nSite Walk"},
-  {key:"decision",  label:"Walk\nOutcome"},
+  {key:"decision",  label:"Good to Go\n(Release)"},
 ];
 
 const STAGE_ABBR = ["ENG\nProp","Plans\nRecv","ENG\nPO","Axis\nCam","CAD\nDone","CAD\u2192CW","CAD\u2192Colo","Prop","Prop\nPO","Local\nRvw"];
@@ -674,10 +679,13 @@ function swimHTML(d){
     </div>`;
   }).join("");
   let branch = "";
-  if(d.walkOutcome === "scheduled"){
-    branch = `<div class="branch-note scheduled">&#10003; Walk confirmed, scope as-is &mdash; site is scheduled and now hands off to the national install team (Mike Burr). It will drop off this tracker once handoff is complete.</div>`;
-  } else if(d.walkOutcome === "change"){
-    branch = `<div class="branch-note change">&#8617; Walk found a delta from scope &mdash; a change order goes back to CoreWeave for approval before plans are finalized.</div>`;
+  const wrb = (d.walkResult||"").trim().toLowerCase();
+  if(wrb === "all good"){
+    branch = `<div class="branch-note scheduled">&#10003; Walk clean &mdash; no change order. Site is <strong>GOOD TO GO</strong>: released to the operations team as an active install project. It drops off this tracker at handoff.</div>`;
+  } else if(wrb === "co approved"){
+    branch = `<div class="branch-note scheduled">&#10003; Change order approved by CoreWeave. Site is <strong>GOOD TO GO</strong>: released to the operations team as an active install project. It drops off this tracker at handoff.</div>`;
+  } else if(wrb === "co submitted"){
+    branch = `<div class="branch-note change">&#8617; Walk found a delta from scope &mdash; change order submitted to CoreWeave. Awaiting their approval before the site can be released to install.</div>`;
   }
   return `<div class="swim"><div class="swim-track"><div class="swim-line"></div>${stops}</div></div>${branch}`;
 }
