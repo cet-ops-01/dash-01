@@ -227,7 +227,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.7a</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.7b</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -903,14 +903,9 @@ function generateCoreWeaveSnapshot(){
   // Auto-select colo type since it's the only option
   snap = snap.replace('function openExportModal(){',
     'function openExportModal(){\n  selectExportType(\'colo\');');
-  // Inject colo correction "Report colo" link on each card for CoreWeave to flag errors
-  snap = snap.replace(/class="card-id">(<div class="title">([^<]+)<\/div>[\s\S]*?<\/div>)/g, (match, inner, site) => {
-    const coloRe = /color:var\(--cyan\)[^>]*>([^<]+)</.exec(match);
-    const currentColo = coloRe ? coloRe[1].trim() : 'Unknown';
-    const subj = encodeURIComponent('Colo Correction \u2014 ' + site.trim());
-    const body = encodeURIComponent('Site: ' + site.trim() + '\nColo shown: ' + currentColo + '\nSuggested correction: \n\nNotes: ');
-    return match + `<a href="mailto:cet@security101.com?subject=${subj}&body=${body}" style="display:inline-flex;align-items:center;gap:4px;font-family:monospace;font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid rgba(234,88,12,0.3);color:#EA580C;background:rgba(234,88,12,0.06);text-decoration:none;margin-top:5px;">&#9873; Report colo</a>`;
-  });
+  // Inject colo report buttons via post-render function in the snapshot JS
+  const coloReportFn = "\nfunction addColoReportButtons(){(_SNAP||[]).forEach(function(d){var cards=[...document.querySelectorAll('.card')];var card=cards.find(function(c){var s=c.querySelector('.seg');return s&&s.textContent.trim()===d.site;});if(!card||card.querySelector('.colo-rpt'))return;var subj=encodeURIComponent('Colo Correction - '+d.site);var body=encodeURIComponent('Site: '+d.site+'\\nColo shown: '+(d.colo||'Unknown')+'\\nSuggested correction: \\n\\nNotes: ');var a=document.createElement('a');a.className='colo-rpt';a.href='mailto:cet@security101.com?subject='+subj+'&body='+body;a.style.cssText='display:inline-flex;align-items:center;gap:4px;font-family:monospace;font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid rgba(234,88,12,0.3);color:#EA580C;background:rgba(234,88,12,0.06);text-decoration:none;margin-top:6px;';a.textContent='Report colo';var ci=card.querySelector('.card-id');if(ci)ci.appendChild(a);});}setTimeout(addColoReportButtons,800);\n";
+  snap = snap.replace('<' + '/script>', coloReportFn + '<' + '/script>');
   _download(snap, `CW-POP-Snapshot-${dateSlug}.html`);
 }
 
