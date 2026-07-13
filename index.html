@@ -114,8 +114,8 @@
   .source-status.error{color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);}
 
   /* STAT STRIP */
-  .owner-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px;}
-  @media(max-width:1100px){.owner-strip{grid-template-columns:repeat(4,1fr);}}
+  .owner-strip{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+  @media(max-width:1200px){.owner-strip{grid-template-columns:repeat(4,1fr);}}
   @media(max-width:700px){.owner-strip{grid-template-columns:repeat(2,1fr);}}
   .ostat{background:var(--panel);padding:14px 14px;cursor:pointer;position:relative;transition:background .15s ease;border-top:3px solid transparent;}
   .ostat:hover{background:var(--panel-2);}
@@ -130,6 +130,7 @@
   .ostat[data-owner="hold"]{border-top-color:var(--trueorange);} .ostat[data-owner="hold"] .num{color:var(--trueorange);}
   .ostat[data-owner="po"]{border-top-color:var(--green);} .ostat[data-owner="po"] .num{color:var(--green);}
   .ostat[data-owner="cancelled"]{border-top-color:var(--text-faint);} .ostat[data-owner="cancelled"] .num{color:var(--text-faint);}
+  .ostat[data-owner="co_change"]{border-top-color:var(--trueorange);} .ostat[data-owner="co_change"] .num{color:var(--trueorange);}
 
   .clear-filter{display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--truegreen);background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.3);border-radius:7px;padding:7px 12px;cursor:pointer;margin-bottom:14px;width:fit-content;}
   .clear-filter.show{display:flex;}
@@ -169,8 +170,12 @@
   .ball-badge.s101{background:rgba(22,163,74,0.10);color:var(--truegreen);border:1px solid rgba(22,163,74,0.4);}
   .ball-badge.hold{background:rgba(234,88,12,0.10);color:var(--trueorange);border:1px solid rgba(234,88,12,0.4);}
   .ball-badge.rfi{background:rgba(220,38,38,0.12);color:var(--truered);border:1px solid rgba(220,38,38,0.45);}
+  .ball-badge.install_ready{background:rgba(22,163,74,0.12);color:var(--truegreen);border:1px solid rgba(22,163,74,0.45);}
+  .ball-badge.co_change{background:rgba(234,88,12,0.10);color:var(--trueorange);border:1px solid rgba(234,88,12,0.4);}
   .ball-badge.colo{background:rgba(234,179,8,0.12);color:var(--trueyellow);border:1px solid rgba(234,179,8,0.45);}
   .ball-badge.rfi{background:rgba(220,38,38,0.12);color:var(--truered);border:1px solid rgba(220,38,38,0.45);}
+  .ball-badge.install_ready{background:rgba(22,163,74,0.12);color:var(--truegreen);border:1px solid rgba(22,163,74,0.45);}
+  .ball-badge.co_change{background:rgba(234,88,12,0.10);color:var(--trueorange);border:1px solid rgba(234,88,12,0.4);}
   .reason{font-size:13px;color:var(--text-dim);margin-bottom:14px;line-height:1.5;}
   .proposals{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
   .prop-chip{flex:1;min-width:200px;border-radius:9px;padding:12px 14px;border:1px solid var(--line);background:var(--panel-2);}
@@ -182,7 +187,7 @@
   .po-pill.po-sub{color:var(--amber);background:rgba(240,194,60,0.08);border:1px solid rgba(240,194,60,0.35);}
   .po-pill.po-no{color:var(--text-faint);background:rgba(124,141,166,0.08);border:1px solid var(--line);}
   .swim{position:relative;padding-top:6px;margin-bottom:4px;}
-  .swim-track{display:grid;grid-template-columns:repeat(5,1fr);position:relative;}
+  .swim-track{display:grid;grid-template-columns:repeat(6,1fr);position:relative;}
   .swim-line{position:absolute;top:13px;left:5%;right:5%;height:2px;background:var(--line);z-index:0;}
   .swim-stop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;}
   .swim-node{width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text-faint);}
@@ -192,6 +197,8 @@
   .swim-stop.current.s101 .swim-node{border-color:var(--truegreen);background:var(--truegreen);color:#fff;box-shadow:0 0 0 4px rgba(22,163,74,0.25);}
   .swim-stop.current.decision .swim-node{border-color:var(--amber);background:var(--amber);color:var(--bg);box-shadow:0 0 0 4px rgba(240,194,60,0.18);border-radius:6px;}
   .swim-stop.current.colo .swim-node{border-color:var(--trueyellow);background:var(--trueyellow);color:#000;box-shadow:0 0 0 4px rgba(234,179,8,0.25);}
+  .swim-stop.current.install_ready .swim-node{border-color:var(--truegreen);background:var(--truegreen);color:#fff;box-shadow:0 0 0 4px rgba(22,163,74,0.3);}
+  .swim-stop.current.co_change .swim-node{border-color:var(--trueorange);background:var(--trueorange);color:#fff;box-shadow:0 0 0 4px rgba(234,88,12,0.25);}
   .swim-label{font-family:var(--mono);font-size:9.5px;color:var(--text-faint);text-align:center;line-height:1.3;}
   .swim-stop.current .swim-label{color:var(--text);font-weight:700;}
   .swim-stop.past .swim-label{color:var(--text-dim);}
@@ -220,7 +227,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.6</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.7</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -339,7 +346,7 @@
       <div class="help-section">
         <div class="help-section-title">Site Cards</div>
         <div class="help-desc" style="margin-bottom:8px;">Each card represents one POP site. The <strong>colored status badge</strong> (top right) shows who currently holds the action. Below the site name, the <strong>colo facility is shown in cyan</strong> &mdash; this is the specific data center, not a generic label.</div>
-        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the five-step deployment process: CoreWeave provides plans &rarr; S101 builds CAD &rarr; Colo or CoreWeave approval &rarr; Local office site walk &rarr; Walk result confirmed. The active step is highlighted.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the six-step deployment process: CW Authorization (plans + PO) &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Walk Outcome (All Good, CO Needed, CO Pending, or CO Approved). The active step is highlighted.</div>
         <div class="help-desc">The <strong>progress bar</strong> reflects completion across 10 internal milestone checkpoints tracked in the program spreadsheet.</div>
       </div>
 
@@ -398,11 +405,12 @@ const CONFIG = {
 };
 
 const SWIM_STOPS = [
-  {key:"coreweave", label:"CoreWeave\nprovides\nplans"},
-  {key:"s101", label:"S101 builds\nCAD &\nlayout"},
-  {key:"coreweave", label:"CoreWeave /\ncolo\napproval"},
-  {key:"s101", label:"Local office\nwalks the\nsite"},
-  {key:"decision", label:"Walk result:\nconfirmed or\nchange needed"},
+  {key:"coreweave", label:"CW\nAuthorizes\n(Plans + PO)"},
+  {key:"s101",      label:"S101\nCAD &\nDesign"},
+  {key:"s101",      label:"Submitted\nto Colo"},
+  {key:"colo",      label:"Colo\nApproval"},
+  {key:"s101",      label:"Local Office\nSite Walk"},
+  {key:"decision",  label:"Walk\nOutcome"},
 ];
 
 const STAGE_ABBR = ["ENG\nProp","Plans\nRecv","ENG\nPO","Axis\nCam","CAD\nDone","CAD\u2192CW","CAD\u2192Colo","Prop","Prop\nPO","Local\nRvw"];
@@ -427,9 +435,26 @@ function deriveOwner(d){
     return {owner:"rfi", swimIdx:1, label:"RFI Outstanding",
       reason:`An RFI has been submitted to CoreWeave. Engineering design is on hold pending CoreWeave's response.`};
 
+  // Walk outcome — local office has completed site walk (highest priority after hold)
+  const wr = (d.walkResult||"").trim().toLowerCase();
+  if(wr){
+    if(wr==="all good")
+      return {owner:"install_ready", swimIdx:5, label:"Install Ready",
+        reason:"Site walk complete. All conditions verified as designed. Green light for installation."};
+    if(wr==="co approved")
+      return {owner:"install_ready", swimIdx:5, label:"Install Ready — CO Approved",
+        reason:"Change order approved by CoreWeave. Site is cleared for installation."};
+    if(wr==="co needed")
+      return {owner:"co_change", swimIdx:5, label:"Change Order Needed",
+        reason:"Site walk identified scope changes. Change order is being prepared for submission to CoreWeave."};
+    if(wr==="co pending")
+      return {owner:"coreweave", swimIdx:5, label:"Change Order Pending",
+        reason:"Change order submitted to CoreWeave. Awaiting their authorization before installation can proceed."};
+  }
+
   // Waiting for colo sign-off on CAD / placement
   if(n.includes("waiting for colo") || n.includes("colo approval"))
-    return {owner:"colo", swimIdx:2, label:`With ${coloName}`,
+    return {owner:"colo", swimIdx:3, label:`With ${coloName}`,
       reason:`CAD layout and coverage plan submitted to ${coloName}. Awaiting their sign-off on mounting and placement.`};
 
   // S101 gate: we need BOTH plans received AND an engineering PO to begin work.
@@ -452,7 +477,7 @@ function buildData(raw){
   return raw.map((d,i) => {
     const pct = d.vals.reduce((a,b)=>a+b,0);
     const own = deriveOwner(d);
-    return Object.assign({}, d, {pct, idx:i, owner:own.owner, swimIdx:own.swimIdx, ownerLabel:own.label, reason:own.reason});
+    return Object.assign({}, d, {pct, idx:i, owner:own.owner, swimIdx:own.swimIdx, ownerLabel:own.label, reason:own.reason, walkResult:d.walkResult||""});
   });
 }
 
@@ -465,7 +490,8 @@ const STAT_DEFS = [
   {key:"coreweave", label:"With CoreWeave",    filter:d=>d.owner==="coreweave" && !d.cancelled},
   {key:"colo",      label:"With Colo",         filter:d=>d.owner==="colo"       && !d.cancelled},
   {key:"rfi",       label:"RFI Outstanding",   filter:d=>d.owner==="rfi"        && !d.cancelled},
-  {key:"s101",      label:"With Security 101", filter:d=>d.owner==="s101"       && !d.cancelled},
+  {key:"s101",      label:"With Security 101", filter:d=>(d.owner==="s101"||d.owner==="install_ready") && !d.cancelled},
+  {key:"co_change", label:"Change Order",         filter:d=>d.owner==="co_change"   && !d.cancelled},
   {key:"hold",      label:"On hold",           filter:d=>d.owner==="hold"       && !d.cancelled},
   {key:"po",        label:"Has a PO issued",   filter:d=>(d.engPoIssued===true||d.instPoIssued===true) && !d.cancelled},
   {key:"cancelled", label:"Cancelled",         filter:d=>d.cancelled===true},
@@ -614,7 +640,7 @@ function swimHTML(d){
   const stops = SWIM_STOPS.map((s,i)=>{
     let cls = "swim-stop";
     if(i < d.swimIdx) cls += " past";
-    if(i === d.swimIdx) cls += " current " + (i===4 ? "decision" : d.owner);
+    if(i === d.swimIdx) cls += " current " + (i===5 ? "decision" : d.owner==="install_ready"?"install_ready":d.owner==="co_change"?"co_change":d.owner);
     return `<div class="${cls}">
       <div class="swim-node">${i+1}</div>
       <div class="swim-label">${s.label.replace(/\n/g,"<br>")}</div>
@@ -763,6 +789,7 @@ function rowToRaw(f){
     po: f["Install Proposal #"]?String(f["Install Proposal #"]):"",
     instPoIssued: String(f["Install PO Status"]||"").trim()==="PO Issued",
     instSubmitted: String(f["Install PO Status"]||"").trim()==="PO Issued" || String(f["Install Submitted"]||"").toLowerCase().includes("y"),
+    walkResult: String(f["Walk Result"]||"").trim(),
     vals: STAGE_HEADERS.map(h=>Number(f[h])||0),
     note: String(f["Notes / Hold Reason"]||""),
     holdReason: String(f["Notes / Hold Reason"]||""),
@@ -880,6 +907,14 @@ function generateCoreWeaveSnapshot(){
   // Auto-select colo type since it's the only option
   snap = snap.replace('function openExportModal(){',
     'function openExportModal(){\n  selectExportType(\'colo\');');
+  // Inject colo correction "Report colo" link on each card for CoreWeave to flag errors
+  snap = snap.replace(/class="card-id">(<div class="title">([^<]+)<\/div>[\s\S]*?<\/div>)/g, (match, inner, site) => {
+    const coloRe = /color:var\(--cyan\)[^>]*>([^<]+)</.exec(match);
+    const currentColo = coloRe ? coloRe[1].trim() : 'Unknown';
+    const subj = encodeURIComponent('Colo Correction \u2014 ' + site.trim());
+    const body = encodeURIComponent('Site: ' + site.trim() + '\nColo shown: ' + currentColo + '\nSuggested correction: \n\nNotes: ');
+    return match + `<a href="mailto:cet@security101.com?subject=${subj}&body=${body}" style="display:inline-flex;align-items:center;gap:4px;font-family:monospace;font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid rgba(234,88,12,0.3);color:#EA580C;background:rgba(234,88,12,0.06);text-decoration:none;margin-top:5px;">&#9873; Report colo</a>`;
+  });
   _download(snap, `CW-POP-Snapshot-${dateSlug}.html`);
 }
 
