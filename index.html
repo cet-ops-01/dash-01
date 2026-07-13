@@ -187,7 +187,7 @@
   .po-pill.po-sub{color:var(--amber);background:rgba(240,194,60,0.08);border:1px solid rgba(240,194,60,0.35);}
   .po-pill.po-no{color:var(--text-faint);background:rgba(124,141,166,0.08);border:1px solid var(--line);}
   .swim{position:relative;padding-top:6px;margin-bottom:4px;}
-  .swim-track{display:grid;grid-template-columns:repeat(6,1fr);position:relative;}
+  .swim-track{display:grid;grid-template-columns:repeat(7,1fr);position:relative;}
   .swim-line{position:absolute;top:13px;left:5%;right:5%;height:2px;background:var(--line);z-index:0;}
   .swim-stop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;}
   .swim-node{width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text-faint);}
@@ -227,7 +227,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.0</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.1</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -346,7 +346,7 @@
       <div class="help-section">
         <div class="help-section-title">Site Cards</div>
         <div class="help-desc" style="margin-bottom:8px;">Each card represents one POP site. The <strong>colored status badge</strong> (top right) shows who currently holds the action. Below the site name, the <strong>colo facility is shown in cyan</strong> &mdash; this is the specific data center, not a generic label.</div>
-        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the six-step deployment process: CW Authorization (plans + PO) &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Walk Outcome (All Good, CO Submitted, or CO Approved). The active step is highlighted.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the seven-step deployment process: CW Issues Eng PO &rarr; CW Provides Plans &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Walk Outcome (All Good, CO Submitted, or CO Approved). The PO and plans are independent gates &mdash; either can arrive first, and the status badge specifies which is outstanding. The active step is highlighted.</div>
         <div class="help-desc">The <strong>progress bar</strong> reflects completion across 10 internal milestone checkpoints tracked in the program spreadsheet.</div>
       </div>
 
@@ -405,7 +405,8 @@ const CONFIG = {
 };
 
 const SWIM_STOPS = [
-  {key:"coreweave", label:"CW\nAuthorizes\n(Plans + PO)"},
+  {key:"coreweave", label:"CW Issues\nEng PO"},
+  {key:"coreweave", label:"CW Provides\nPlans"},
   {key:"s101",      label:"S101\nCAD &\nDesign"},
   {key:"s101",      label:"Submitted\nto Colo"},
   {key:"colo",      label:"Colo\nApproval"},
@@ -439,35 +440,39 @@ function deriveOwner(d){
   const wr = (d.walkResult||"").trim().toLowerCase();
   if(wr){
     if(wr==="all good")
-      return {owner:"install_ready", swimIdx:5, label:"Install Ready",
+      return {owner:"install_ready", swimIdx:6, label:"Install Ready",
         reason:"Site walk complete. All conditions verified as designed. Green light for installation."};
     if(wr==="co approved")
-      return {owner:"install_ready", swimIdx:5, label:"Install Ready \u2014 CO Approved",
+      return {owner:"install_ready", swimIdx:6, label:"Install Ready \u2014 CO Approved",
         reason:"Change order approved by CoreWeave. PO to be updated. Site is cleared for installation."};
     if(wr==="co submitted")
-      return {owner:"coreweave", swimIdx:5, label:"Change Order Submitted",
+      return {owner:"coreweave", swimIdx:6, label:"Change Order Submitted",
         reason:"Site walk identified scope changes. CoreWeave has been notified and the change order has been submitted. Awaiting their approval."};
   }
 
   // Waiting for colo sign-off on CAD / placement
   if(n.includes("waiting for colo") || n.includes("colo approval"))
-    return {owner:"colo", swimIdx:3, label:`With ${coloName}`,
+    return {owner:"colo", swimIdx:4, label:`With ${coloName}`,
       reason:`CAD layout and coverage plan submitted to ${coloName}. Awaiting their sign-off on mounting and placement.`};
 
-  // S101 gate: we need BOTH plans received AND an engineering PO to begin work.
+  // Two independent CoreWeave gates: engineering PO and site plans. Either can arrive first.
   const plansReceived = Array.isArray(d.vals) && d.vals[1] > 0;  // vals[1] = "Plans Received"
 
   if(plansReceived && d.engPoIssued)
-    return {owner:"s101", swimIdx:1, label:"With Security 101",
+    return {owner:"s101", swimIdx:2, label:"With Security 101",
       reason:"Site plans and engineering PO received. Our team is actively developing the CAD layout and coverage design."};
 
-  if(!plansReceived)
-    return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
-      reason:"Pending site plan delivery from CoreWeave. Engineering design will begin once site plans and engineering PO are both in place."};
+  if(d.engPoIssued && !plansReceived)
+    return {owner:"coreweave", swimIdx:1, label:"With CoreWeave \u2014 Awaiting Plans",
+      reason:"Engineering PO is in hand. Waiting on CoreWeave to deliver the site plans so design work can begin."};
 
-  // Plans in hand, PO not yet authorized
+  if(plansReceived && !d.engPoIssued)
+    return {owner:"coreweave", swimIdx:0, label:"With CoreWeave \u2014 Awaiting PO",
+      reason:"Site plans received. Waiting on CoreWeave to issue the engineering PO so design work can begin."};
+
+  // Neither in hand
   return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
-    reason:"Site plans received. Engineering design is pending CoreWeave engineering PO authorization."};
+    reason:"Waiting on CoreWeave for both the engineering PO and site plans. Design work begins once both are in place."};
 }
 
 function buildData(raw){
@@ -636,7 +641,10 @@ function swimHTML(d){
   const stops = SWIM_STOPS.map((s,i)=>{
     let cls = "swim-stop";
     if(i < d.swimIdx) cls += " past";
-    if(i === d.swimIdx) cls += " current " + (i===5 ? "decision" : d.owner==="install_ready"?"install_ready":d.owner==="co_change"?"co_change":d.owner);
+    // Independent gates: stop 0 (PO) and stop 1 (Plans) complete individually
+    if(i===0 && d.engPoIssued && d.swimIdx<=1 && !cls.includes("past") && !cls.includes("current")) cls += " past";
+    if(i===1 && Array.isArray(d.vals) && d.vals[1]>0 && d.swimIdx<=1 && !cls.includes("past") && !cls.includes("current")) cls += " past";
+    if(i === d.swimIdx) cls += " current " + (i===6 ? "decision" : d.owner==="install_ready"?"install_ready":d.owner==="co_change"?"co_change":d.owner);
     return `<div class="${cls}">
       <div class="swim-node">${i+1}</div>
       <div class="swim-label">${s.label.replace(/\n/g,"<br>")}</div>
