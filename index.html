@@ -114,7 +114,7 @@
   .source-status.error{color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);}
 
   /* STAT STRIP */
-  .owner-strip{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+  .owner-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px;}
   @media(max-width:1200px){.owner-strip{grid-template-columns:repeat(4,1fr);}}
   @media(max-width:700px){.owner-strip{grid-template-columns:repeat(2,1fr);}}
   .ostat{background:var(--panel);padding:14px 14px;cursor:pointer;position:relative;transition:background .15s ease;border-top:3px solid transparent;}
@@ -346,7 +346,7 @@
       <div class="help-section">
         <div class="help-section-title">Site Cards</div>
         <div class="help-desc" style="margin-bottom:8px;">Each card represents one POP site. The <strong>colored status badge</strong> (top right) shows who currently holds the action. Below the site name, the <strong>colo facility is shown in cyan</strong> &mdash; this is the specific data center, not a generic label.</div>
-        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the six-step deployment process: CW Authorization (plans + PO) &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Walk Outcome (All Good, CO Needed, CO Pending, or CO Approved). The active step is highlighted.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the six-step deployment process: CW Authorization (plans + PO) &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Walk Outcome (All Good, CO Submitted, or CO Approved). The active step is highlighted.</div>
         <div class="help-desc">The <strong>progress bar</strong> reflects completion across 10 internal milestone checkpoints tracked in the program spreadsheet.</div>
       </div>
 
@@ -442,14 +442,11 @@ function deriveOwner(d){
       return {owner:"install_ready", swimIdx:5, label:"Install Ready",
         reason:"Site walk complete. All conditions verified as designed. Green light for installation."};
     if(wr==="co approved")
-      return {owner:"install_ready", swimIdx:5, label:"Install Ready — CO Approved",
-        reason:"Change order approved by CoreWeave. Site is cleared for installation."};
-    if(wr==="co needed")
-      return {owner:"co_change", swimIdx:5, label:"Change Order Needed",
-        reason:"Site walk identified scope changes. Change order is being prepared for submission to CoreWeave."};
-    if(wr==="co pending")
-      return {owner:"coreweave", swimIdx:5, label:"Change Order Pending",
-        reason:"Change order submitted to CoreWeave. Awaiting their authorization before installation can proceed."};
+      return {owner:"install_ready", swimIdx:5, label:"Install Ready \u2014 CO Approved",
+        reason:"Change order approved by CoreWeave. PO to be updated. Site is cleared for installation."};
+    if(wr==="co submitted")
+      return {owner:"coreweave", swimIdx:5, label:"Change Order Submitted",
+        reason:"Site walk identified scope changes. CoreWeave has been notified and the change order has been submitted. Awaiting their approval."};
   }
 
   // Waiting for colo sign-off on CAD / placement
@@ -491,7 +488,6 @@ const STAT_DEFS = [
   {key:"colo",      label:"With Colo",         filter:d=>d.owner==="colo"       && !d.cancelled},
   {key:"rfi",       label:"RFI Outstanding",   filter:d=>d.owner==="rfi"        && !d.cancelled},
   {key:"s101",      label:"With Security 101", filter:d=>(d.owner==="s101"||d.owner==="install_ready") && !d.cancelled},
-  {key:"co_change", label:"Change Order",         filter:d=>d.owner==="co_change"   && !d.cancelled},
   {key:"hold",      label:"On hold",           filter:d=>d.owner==="hold"       && !d.cancelled},
   {key:"po",        label:"Has a PO issued",   filter:d=>(d.engPoIssued===true||d.instPoIssued===true) && !d.cancelled},
   {key:"cancelled", label:"Cancelled",         filter:d=>d.cancelled===true},
