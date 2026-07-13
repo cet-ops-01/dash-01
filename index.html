@@ -227,7 +227,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.7b</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.7d</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -903,8 +903,163 @@ function generateCoreWeaveSnapshot(){
   // Auto-select colo type since it's the only option
   snap = snap.replace('function openExportModal(){',
     'function openExportModal(){\n  selectExportType(\'colo\');');
-  // Inject colo report buttons via post-render function in the snapshot JS
-  const coloReportFn = "\nfunction addColoReportButtons(){(_SNAP||[]).forEach(function(d){var cards=[...document.querySelectorAll('.card')];var card=cards.find(function(c){var s=c.querySelector('.seg');return s&&s.textContent.trim()===d.site;});if(!card||card.querySelector('.colo-rpt'))return;var subj=encodeURIComponent('Colo Correction - '+d.site);var body=encodeURIComponent('Site: '+d.site+'\\nColo shown: '+(d.colo||'Unknown')+'\\nSuggested correction: \\n\\nNotes: ');var a=document.createElement('a');a.className='colo-rpt';a.href='mailto:cet@security101.com?subject='+subj+'&body='+body;a.style.cssText='display:inline-flex;align-items:center;gap:4px;font-family:monospace;font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid rgba(234,88,12,0.3);color:#EA580C;background:rgba(234,88,12,0.06);text-decoration:none;margin-top:6px;';a.textContent='Report colo';var ci=card.querySelector('.card-id');if(ci)ci.appendChild(a);});}setTimeout(addColoReportButtons,800);\n";
+  // Inject full colo correction queue system into CoreWeave snapshot
+  const coloReportFn = `
+(function(){
+var KNOWN_COLOS=['Equinix','Digital Realty','CoreSite','Westin Building Exchange','DataBank','QTS','STACK Infrastructure','Switch'];
+var _queue=[];
+var _currentSite='';
+var _currentColo='';
+
+// ── CSS ─────────────────────────────────────────────────────────
+var style=document.createElement('style');
+style.textContent=\`
+#coloQueueBar{display:none;position:sticky;top:0;z-index:998;background:#18213A;border-bottom:2px solid rgba(234,88,12,0.5);padding:10px 24px;font-family:monospace;}
+#coloQueueBar.visible{display:block;}
+.cqb-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.cqb-title{font-size:11px;font-weight:700;color:#EA580C;letter-spacing:0.08em;text-transform:uppercase;}
+.cqb-send{background:#EA580C;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;letter-spacing:0.02em;}
+.cqb-send:hover{opacity:0.88;}
+.cqb-list{margin-top:8px;display:flex;flex-direction:column;gap:4px;}
+.cqb-item{display:flex;align-items:center;gap:10px;font-size:11px;color:#A8BAD0;}
+.cqb-item strong{color:#F2F6FC;}
+.cqb-item .arr{color:#EA580C;}
+.cqb-remove{background:none;border:none;color:#6882A0;font-size:14px;cursor:pointer;padding:0 4px;line-height:1;}
+.cqb-remove:hover{color:#DC2626;}
+.colo-fix-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,22,0.88);z-index:9999;align-items:center;justify-content:center;padding:20px;}
+.colo-fix-overlay.open{display:flex;}
+.colo-fix-box{background:#18213A;border:1px solid #2E3F5C;border-radius:14px;width:100%;max-width:460px;padding:28px 30px 30px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;}
+.colo-fix-box h3{font-size:16px;font-weight:700;color:#F2F6FC;margin-bottom:4px;}
+.colo-fix-box .sub{font-size:12px;color:#A8BAD0;margin-bottom:20px;}
+.cf-lbl{font-family:monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#6882A0;margin-bottom:5px;}
+.cf-val{font-size:13px;color:#F2F6FC;margin-bottom:16px;padding:8px 10px;background:#0F1520;border:1px solid #2E3F5C;border-radius:7px;}
+.cf-select{width:100%;background:#0F1520;border:1px solid #2E3F5C;border-radius:7px;padding:9px 12px;color:#F2F6FC;font-size:13px;margin-bottom:12px;outline:none;box-sizing:border-box;cursor:pointer;}
+.cf-select:focus{border-color:#3FD6C4;}
+.cf-other{display:none;width:100%;background:#0F1520;border:1px solid #EAB308;border-radius:7px;padding:9px 12px;color:#F2F6FC;font-size:13px;margin-bottom:12px;outline:none;box-sizing:border-box;}
+.cf-other:focus{border-color:#3FD6C4;}
+.cf-other.show{display:block;}
+.cf-other-lbl{display:none;font-size:11px;color:#EAB308;margin-bottom:6px;}
+.cf-other-lbl.show{display:block;}
+.cf-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+.cf-cancel{background:none;border:1px solid #2E3F5C;border-radius:7px;color:#6882A0;font-size:13px;padding:8px 16px;cursor:pointer;}
+.cf-cancel:hover{border-color:#A8BAD0;color:#F2F6FC;}
+.cf-add{background:#3FD6C4;border:none;border-radius:7px;color:#0F1520;font-size:13px;font-weight:700;padding:8px 20px;cursor:pointer;}
+.cf-add:hover{opacity:0.88;}
+.colo-fix-trigger{display:inline-block;font-family:monospace;font-size:10px;color:#6882A0;text-decoration:underline;text-underline-offset:2px;margin-top:5px;cursor:pointer;}
+\`;
+document.head.appendChild(style);
+
+// ── QUEUE BAR ───────────────────────────────────────────────────
+var bar=document.createElement('div');
+bar.id='coloQueueBar';
+bar.innerHTML=\`<div class="cqb-hdr">
+  <span class="cqb-title">&#9888;&nbsp;Corrections Queued — <span id="cqbCount">0</span> site(s) flagged</span>
+  <button class="cqb-send" onclick="sendAllCorrections()">Send All Corrections to CET &nbsp;&#9993;</button>
+</div><div class="cqb-list" id="cqbList"></div>\`;
+document.body.insertBefore(bar,document.body.firstChild);
+
+// ── MODAL ───────────────────────────────────────────────────────
+var overlay=document.createElement('div');
+overlay.className='colo-fix-overlay';
+overlay.id='coloFixOverlay';
+var opts=KNOWN_COLOS.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('');
+overlay.innerHTML=\`<div class="colo-fix-box">
+  <h3>Colo Assignment Correction</h3>
+  <div class="sub">Select the correct colocation facility for this site. Your correction will be queued and sent to the Security 101 CET team.</div>
+  <div class="cf-lbl">Site</div><div class="cf-val" id="cfSite"></div>
+  <div class="cf-lbl">Currently shown as</div><div class="cf-val" id="cfCurrent"></div>
+  <div class="cf-lbl">Correct colo facility</div>
+  <select class="cf-select" id="cfSelect" onchange="onColoSelect()">
+    <option value="">— Select the correct colo —</option>\${opts}<option value="__other__">Colo not on this list — enter manually</option>
+  </select>
+  <div class="cf-other-lbl" id="cfOtherLbl">Enter the correct colo facility name</div>
+  <input class="cf-other" id="cfOther" placeholder="e.g. CyrusOne, Cologix...">
+  <div class="cf-actions">
+    <button class="cf-cancel" onclick="document.getElementById('coloFixOverlay').classList.remove('open')">Cancel</button>
+    <button class="cf-add" onclick="addToQueue()">Add to Corrections Queue</button>
+  </div>
+</div>\`;
+overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.classList.remove('open');});
+document.body.appendChild(overlay);
+
+// ── FUNCTIONS ───────────────────────────────────────────────────
+window.onColoSelect=function(){
+  var v=document.getElementById('cfSelect').value;
+  var isOther=v==='__other__';
+  document.getElementById('cfOtherLbl').classList.toggle('show',isOther);
+  document.getElementById('cfOther').classList.toggle('show',isOther);
+  if(isOther) setTimeout(function(){document.getElementById('cfOther').focus();},50);
+};
+
+window.addToQueue=function(){
+  var sel=document.getElementById('cfSelect').value;
+  var other=document.getElementById('cfOther').value.trim();
+  var correct=sel==='__other__'?other:sel;
+  if(!correct){alert('Please select or enter the correct colo facility.');return;}
+  if(correct===_currentColo){alert('That is the same as the current colo. No change needed.');return;}
+  // Remove any existing entry for this site
+  _queue=_queue.filter(function(q){return q.site!==_currentSite;});
+  _queue.push({site:_currentSite,from:_currentColo,to:correct});
+  updateBar();
+  document.getElementById('coloFixOverlay').classList.remove('open');
+};
+
+function updateBar(){
+  document.getElementById('cqbCount').textContent=_queue.length;
+  var list=document.getElementById('cqbList');
+  list.innerHTML=_queue.map(function(q,i){
+    return '<div class="cqb-item"><button class="cqb-remove" onclick="_queue.splice('+i+',1);updateBar()" title="Remove">&times;</button><strong>'+q.site+'</strong><span class="arr">&#8594;</span><span>'+q.to+'</span><span style="color:#6882A0;font-size:10px;">&nbsp;(was: '+q.from+')</span></div>';
+  }).join('');
+  bar.classList.toggle('visible',_queue.length>0);
+}
+window.updateBar=updateBar;
+
+window.sendAllCorrections=function(){
+  if(_queue.length===0){alert('No corrections queued.');return;}
+  var lines=_queue.map(function(q,i){return (i+1)+'. Site: '+q.site+' | Shown as: '+q.from+' | Correct facility: '+q.to;}).join('\\n');
+  var subj=encodeURIComponent('POP Tracker \u2014 Colo Adjustments');
+  var body=encodeURIComponent(
+    'CET Team,\\n\\n'+
+    'The following colo assignments have been identified as incorrect in the POP Site Status Tracker '+
+    'and are being submitted for correction:\\n\\n'+
+    lines+'\\n\\n'+
+    'Please review and update the tracker accordingly. If any of the suggested corrections require '+
+    'clarification, do not hesitate to reach out.\\n\\n'+
+    'This notification was generated directly from the CoreWeave POP Site Status Tracker export.'
+  );
+  window.location.href='mailto:cet@security101.com?subject='+subj+'&body='+body;
+};
+
+// ── PER-CARD TRIGGERS ───────────────────────────────────────────
+function addTriggers(){
+  (_SNAP||[]).forEach(function(d){
+    if(!d.colo||d.colo==='TBD') return;
+    var cards=[...document.querySelectorAll('.card')];
+    var card=cards.find(function(c){var s=c.querySelector('.seg');return s&&s.textContent.trim()===d.site;});
+    if(!card||card.querySelector('.colo-fix-trigger')) return;
+    var a=document.createElement('a');
+    a.className='colo-fix-trigger';
+    a.href='#';
+    a.textContent='If '+d.colo+' is incorrect, click here';
+    a.addEventListener('click',function(e){
+      e.preventDefault();
+      _currentSite=d.site;
+      _currentColo=d.colo;
+      document.getElementById('cfSite').textContent=d.site;
+      document.getElementById('cfCurrent').textContent=d.colo;
+      document.getElementById('cfSelect').value='';
+      document.getElementById('cfOther').value='';
+      document.getElementById('cfOtherLbl').classList.remove('show');
+      document.getElementById('cfOther').classList.remove('show');
+      document.getElementById('coloFixOverlay').classList.add('open');
+    });
+    var ci=card.querySelector('.card-id');
+    if(ci) ci.appendChild(a);
+  });
+}
+setTimeout(addTriggers,800);
+})();
+`;
   snap = snap.replace('<' + '/script>', coloReportFn + '<' + '/script>');
   _download(snap, `CW-POP-Snapshot-${dateSlug}.html`);
 }
