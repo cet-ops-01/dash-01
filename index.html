@@ -227,7 +227,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.8a</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v4.8b</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -888,8 +888,8 @@ function generateCoreWeaveSnapshot(){
   snap = snap.replace('const RAW = [];',`const RAW = [];\nconst _SNAP = ${JSON.stringify(DATA)};`);
   snap = snap.replace('let DATA = buildData(RAW);','let DATA = _SNAP;');
   snap = snap.replace('fetchLiveData();','// snapshot — no live feed');
-  snap = snap.replace(/id="sourceStatus" class="source-status"[^>]*>[^<]*/,
-    `id="sourceStatus" class="source-status" style="color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);">Snapshot \u2014 ${tsLabel}`);
+  snap = snap.replace(/<div[^>]*id="sourceStatus"[^>]*>[^<]*/,
+    `<div id="sourceStatus" class="source-status" style="color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);">Snapshot \u2014 last synced ${tsLabel} \u00b7 ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   const banner = `<div style="background:rgba(240,194,60,0.10);border-bottom:1px solid rgba(240,194,60,0.25);padding:7px 24px;font-family:monospace;font-size:11px;color:#F0C23C;letter-spacing:0.06em;text-align:center;">SNAPSHOT OF POP TRACKER &mdash; ${tsLabel} &middot; ${Intl.DateTimeFormat().resolvedOptions().timeZone}</div>`;
   snap = snap.replace('<div class="layout">', banner+'\n<div class="layout">');
   snap = snap.replace(/style="color:var\(--blue\);border-color:rgba\(37,99,235,0\.4\);background:rgba\(37,99,235,0\.07\);">v4\.\d+<\/div>/,
