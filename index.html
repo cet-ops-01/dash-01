@@ -193,6 +193,7 @@
   .date-line.block{margin-top:8px;font-size:10.5px;}
   .date-line.block .age{color:var(--truered);}
   .date-line.block.colo .age{color:var(--trueyellow);}
+  .date-line.block.rfi .age{color:var(--truered);}
   .po-pill.po-no{color:var(--text-faint);background:rgba(124,141,166,0.08);border:1px solid var(--line);}
   .swim{position:relative;padding-top:6px;margin-bottom:4px;}
   .swim-track{display:grid;grid-template-columns:repeat(7,1fr);position:relative;}
@@ -245,7 +246,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.3e</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.3f</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -802,7 +803,7 @@ function renderList(){
         </div>
       </div>
       ${(d.note||'').toLowerCase().includes('rfi') ? `<div class="rfi-badge"><span class="rfi-dot"></span>RFI Outstanding &mdash; Awaiting Response</div>` : ""}
-      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}${d.owner==="rfi" ? rfiStripHTML(d) : ""}${d.owner==="colo" ? `<div class="date-line block colo">Submitted to colo <b>${fmtGateDate(d.dColoSub)}</b>${parseGateDate(d.dColoAppr) ? ` &nbsp;&bull;&nbsp; approved <b>${fmtGateDate(d.dColoAppr)}</b>` : ageTag(d.dColoSub)}</div>` : ""}</div>`}
+      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}${d.owner==="rfi" ? `<div class="date-line block rfi">RFI sent <b>${fmtGateDate(d.dRfi)}</b>${ageTag(d.dRfi)}</div>` : ""}${d.owner==="colo" ? `<div class="date-line block colo">Submitted to colo <b>${fmtGateDate(d.dColoSub)}</b>${parseGateDate(d.dColoAppr) ? ` &nbsp;&bull;&nbsp; approved <b>${fmtGateDate(d.dColoAppr)}</b>` : ageTag(d.dColoSub)}</div>` : ""}</div>`}
       ${proposalHTML(d)}
       ${swimHTML(d)}
       ${progressHTML(d)}
