@@ -246,7 +246,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.4b</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.5</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -430,8 +430,8 @@
 
       <div class="help-section">
         <div class="help-section-title">How Completion % Is Calculated</div>
-        <div class="help-desc" style="margin-bottom:8px;">The completion percentage reflects the full path to installation release, not just the engineering package. The engineering and design front end (the ten checkpoints: proposal, plans, PO, camera layout, CAD, submissions, proposal, proposal PO, local review) carries a site to <strong>70%</strong>. From there the back-end field milestones carry it the rest of the way: <strong>Colo Approved &rarr; 78%</strong>, then <strong>Site Walk Complete &rarr; 85%</strong>. After the walk the path branches: a <strong>clean walk</strong> (Walk Result "All Good") goes straight from 85% to <strong>100% on release</strong>; a walk that needs changes follows <strong>CO Submitted &rarr; 92%</strong>, <strong>CO Approved &rarr; 97%</strong>, then <strong>Released &rarr; 100%</strong>.</div>
-        <div class="help-tip">Each back-end milestone advances automatically when its date is entered on the sheet: Colo Approval Date, Site Walk Date, CO Submitted Date, CO Approved Date, and Release to Install Date. The Walk Result column (All Good / CO Submitted / CO Approved) determines which branch a site takes after the walk.</div>
+        <div class="help-desc" style="margin-bottom:8px;">The completion percentage reflects the full path to installation release, not just the engineering package. The engineering and design front end (the ten checkpoints: proposal, plans, PO, camera layout, CAD, submissions, proposal, proposal PO, local review) carries a site to <strong>70%</strong>. From there the back-end field milestones carry it the rest of the way: <strong>Colo Approved &rarr; 78%</strong>, then <strong>Site Walk Complete &rarr; 85%</strong>. After the walk the path branches: a <strong>clean walk</strong> (Walk Result "All Good") advances to <strong>92% once the Installation PO is issued</strong>, then <strong>100% on release</strong>; a walk that needs changes follows <strong>CO Submitted &rarr; 90%</strong>, <strong>CO Approved &rarr; 95%</strong>, <strong>Install PO Issued &rarr; 97%</strong>, then <strong>Released &rarr; 100%</strong>.</div>
+        <div class="help-tip"><strong>The Installation PO is a hard gate:</strong> a site can never reach 100% or show as released without it. No matter how clean the walk or how resolved the change order, the project is not good to go until CoreWeave issues the installation PO. Each back-end milestone advances when its date is entered on the sheet: Colo Approval Date, Site Walk Date, CO Submitted Date, CO Approved Date, and Release to Install Date. The Walk Result column (All Good / CO Submitted / CO Approved) determines which branch a site takes after the walk.</div>
       </div>
 
       <div class="help-section">
@@ -495,12 +495,20 @@ function deriveOwner(d){
   // Walk outcome — local office has completed site walk (highest priority after hold)
   const wr = (d.walkResult||"").trim().toLowerCase();
   if(wr){
-    if(wr==="all good")
+    if(wr==="all good"){
+      if(!d.instPoIssued)
+        return {owner:"coreweave", swimIdx:6, label:"With CoreWeave \u2014 Awaiting Install PO",
+          reason:"Site walk complete and verified as designed. Cleared to mobilize once CoreWeave issues the installation PO. The site cannot be released for installation until that PO is in hand."};
       return {owner:"install_ready", swimIdx:6, label:"Install Ready",
-        reason:"Site walk complete. All conditions verified as designed. Green light for installation."};
-    if(wr==="co approved")
+        reason:"Site walk complete. All conditions verified as designed. Installation PO issued. Green light for installation."};
+    }
+    if(wr==="co approved"){
+      if(!d.instPoIssued)
+        return {owner:"coreweave", swimIdx:6, label:"With CoreWeave \u2014 Awaiting Install PO",
+          reason:"Change order approved by CoreWeave. Cleared to mobilize once the installation PO is issued to reflect the updated scope. The site cannot be released until that PO is in hand."};
       return {owner:"install_ready", swimIdx:6, label:"Install Ready \u2014 CO Approved",
-        reason:"Change order approved by CoreWeave. PO to be updated. Site is cleared for installation."};
+        reason:"Change order approved and installation PO issued. Site is cleared for installation."};
+    }
     if(wr==="co submitted")
       return {owner:"coreweave", swimIdx:6, label:"Change Order Submitted",
         reason:"Site walk identified scope changes. CoreWeave has been notified and the change order has been submitted. Awaiting their approval."};
@@ -551,17 +559,22 @@ function computePct(d){
     pct = 70;
     if(has(d.dColoAppr)) pct = 78;                 // Colo approved / received
     if(has(d.dWalk) || wr) pct = 85;               // Local site walk complete
-    if(wr === "all good"){                          // Clean walk -> jumps straight to released
-      pct = has(d.dRelease) ? 100 : 85;             // 85 until release date recorded, then 100
+    if(wr === "all good"){                          // Clean walk -> heads to release
+      pct = 85;
+      if(d.instPoIssued) pct = 92;                 // Install PO in hand: cleared to mobilize
+      if(has(d.dRelease) && d.instPoIssued) pct = 100;  // Released (requires install PO)
     } else if(wr === "co submitted" || has(d.dCoSub)){
-      pct = 92;                                     // CO submitted to CoreWeave
-      if(wr === "co approved" || has(d.dCoAppr)) pct = 97;   // CO approved / final decision
-      if(has(d.dRelease)) pct = 100;               // Released to installation
+      pct = 90;                                     // CO submitted to CoreWeave
+      if(wr === "co approved" || has(d.dCoAppr)) pct = 95;   // CO approved / final decision
+      if(d.instPoIssued) pct = Math.max(pct, 97);  // Install PO in hand
+      if(has(d.dRelease) && d.instPoIssued) pct = 100;
     } else if(wr === "co approved" || has(d.dCoAppr)){
-      pct = 97;
-      if(has(d.dRelease)) pct = 100;
+      pct = 95;
+      if(d.instPoIssued) pct = 97;
+      if(has(d.dRelease) && d.instPoIssued) pct = 100;
     }
-    if(has(d.dRelease)) pct = 100;                  // Release always means 100
+    // HARD GATE: a site can never reach 100% without the installation PO issued.
+    if(!d.instPoIssued && pct >= 100) pct = 97;
   }
   return pct;
 }
@@ -1133,7 +1146,7 @@ setTimeout(addTriggers,900);
   // Swap internal How to Use content with CoreWeave-facing version
   const cwHelp = `<div class="help-modal-hdr"><div><h2>How to Use This Tracker</h2><p>A point-in-time snapshot of the Security 101 CoreWeave POP deployment program &mdash; where every site stands and who currently holds the action.</p></div><button class="help-close" onclick="document.getElementById('helpOverlay').classList.remove('open')">&times;</button></div>
 <div class="help-section"><div class="help-section-title">Status Strip</div><div class="help-desc" style="margin-bottom:8px;">The tiles across the top show how many sites are in each state. Click any tile to filter the list. <strong>With CoreWeave</strong> means the next action is on the CoreWeave side (site plans or engineering PO). <strong>With [Colo Name]</strong> means the design is with that facility awaiting sign-off. <strong>RFI Outstanding</strong> means we are waiting on a CoreWeave response to a submitted question. <strong>With Security 101</strong> means our engineering team is actively working the design.</div></div>
-<div class="help-section"><div class="help-section-title">Gate Colors on Each Site</div><div class="help-desc" style="margin-bottom:8px;">The seven-step lane on every card is a traffic light: <strong style="color:#16A34A;">green &#10003;</strong> = step complete &middot; <strong style="color:#EAB308;">yellow</strong> = submitted and awaiting a response &middot; <strong style="color:#DC2626;">red</strong> = progress is blocked by an outstanding RFI &middot; gray = not yet started. The final gate, <strong>Good to Go (Release)</strong>, turns green when the site walk closes clean (or its change order is approved) and the site is released to installation &mdash; at which point it leaves this tracker.</div></div><div class="help-section"><div class="help-section-title">How Completion % Is Calculated</div><div class="help-desc" style="margin-bottom:8px;">The completion percentage reflects the full path to installation release, not just the engineering package. The engineering and design front end (proposal, plans, PO, camera layout, CAD, submissions) carries a site to <strong>70%</strong>. From there the back-end field milestones carry it the rest of the way: <strong>Colo Approved &rarr; 78%</strong>, <strong>Site Walk Complete &rarr; 85%</strong>. After the walk the path branches: a <strong>clean walk</strong> goes straight from 85% to <strong>100% on release</strong>; a walk that needs changes follows <strong>CO Submitted &rarr; 92%</strong>, <strong>CO Approved &rarr; 97%</strong>, then <strong>Released &rarr; 100%</strong>. Each back-end milestone advances when its date is recorded on the sheet.</div></div><div class="help-section"><div class="help-section-title">Dates &amp; Response Times</div><div class="help-desc" style="margin-bottom:8px;">Submission and receipt dates appear on each proposal, and open items carry running day counters &mdash; for example, <strong style="color:#DC2626;">RFI sent [date]: open N days</strong> shows how long each RFI has been open, and amber counters show how long each submitted proposal has been open awaiting a PO. Back-end milestones each track a date on the sheet: Colo Submitted / Approved, Site Walk, CO Submitted / Approved, and Release to Install. <strong>PENDING</strong> indicates a date not yet recorded.</div></div><div class="help-section"><div class="help-section-title">Responding to RFIs</div><div class="help-desc" style="margin-bottom:8px;">Sites with an open RFI display a red <strong>Respond to the RFI for this site</strong> button. Click it to view the question on file and type your response directly. You can also reference supporting files. Responses are added to a queue at the top of the page and sent together.</div></div>
+<div class="help-section"><div class="help-section-title">Gate Colors on Each Site</div><div class="help-desc" style="margin-bottom:8px;">The seven-step lane on every card is a traffic light: <strong style="color:#16A34A;">green &#10003;</strong> = step complete &middot; <strong style="color:#EAB308;">yellow</strong> = submitted and awaiting a response &middot; <strong style="color:#DC2626;">red</strong> = progress is blocked by an outstanding RFI &middot; gray = not yet started. The final gate, <strong>Good to Go (Release)</strong>, turns green when the site walk closes clean (or its change order is approved) and the site is released to installation &mdash; at which point it leaves this tracker.</div></div><div class="help-section"><div class="help-section-title">How Completion % Is Calculated</div><div class="help-desc" style="margin-bottom:8px;">The completion percentage reflects the full path to installation release, not just the engineering package. The engineering and design front end (proposal, plans, PO, camera layout, CAD, submissions) carries a site to <strong>70%</strong>. From there the back-end field milestones carry it the rest of the way: <strong>Colo Approved &rarr; 78%</strong>, <strong>Site Walk Complete &rarr; 85%</strong>. After the walk the path branches: a <strong>clean walk</strong> advances to <strong>92% once the installation PO is issued</strong>, then <strong>100% on release</strong>; a walk that needs changes follows <strong>CO Submitted &rarr; 90%</strong>, <strong>CO Approved &rarr; 95%</strong>, <strong>Install PO Issued &rarr; 97%</strong>, then <strong>Released &rarr; 100%</strong>. A site cannot reach 100% or release for installation until the installation PO is issued.</div></div><div class="help-section"><div class="help-section-title">Dates &amp; Response Times</div><div class="help-desc" style="margin-bottom:8px;">Submission and receipt dates appear on each proposal, and open items carry running day counters &mdash; for example, <strong style="color:#DC2626;">RFI sent [date]: open N days</strong> shows how long each RFI has been open, and amber counters show how long each submitted proposal has been open awaiting a PO. Back-end milestones each track a date on the sheet: Colo Submitted / Approved, Site Walk, CO Submitted / Approved, and Release to Install. <strong>PENDING</strong> indicates a date not yet recorded.</div></div><div class="help-section"><div class="help-section-title">Responding to RFIs</div><div class="help-desc" style="margin-bottom:8px;">Sites with an open RFI display a red <strong>Respond to the RFI for this site</strong> button. Click it to view the question on file and type your response directly. You can also reference supporting files. Responses are added to a queue at the top of the page and sent together.</div></div>
 <div class="help-section"><div class="help-section-title">Correcting a Colo Assignment</div><div class="help-desc" style="margin-bottom:8px;">Each site shows its colocation facility. If an assignment is wrong, click the yellow <strong>If [Colo] is incorrect, click here</strong> button on that card, select the correct facility from the list, and add it to the queue.</div></div>
 <div class="help-section"><div class="help-section-title">Sending Your Submissions</div><div class="help-desc" style="margin-bottom:8px;">As you queue RFI responses and colo corrections, a summary bar appears at the top of the page. Review your items, remove any you don&rsquo;t need, then click <strong>Send All to CET</strong>. A single email opens addressed to the Security 101 Corporate Engineering Team with everything formatted and ready to send. If you referenced any files, attach them to the email before sending.</div></div>
 <div class="help-section"><div class="help-section-title">Exporting for a Colo</div><div class="help-desc" style="margin-bottom:8px;">Use the <strong>Export snapshot</strong> button to generate a filtered view for a specific colocation provider &mdash; for example, only the Equinix sites. The exported file contains site status only, with no proposal or commercial data, and can be shared directly with the facility.</div></div>
