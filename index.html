@@ -246,7 +246,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.4</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.4a</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -426,6 +426,12 @@
           <div class="help-desc">The proposal exists internally but has not been submitted to CoreWeave. <strong>CoreWeave has not seen this proposal.</strong></div>
         </div>
         <div class="help-tip">Each site card shows this status separately for the Engineering proposal and the Installation proposal.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">How Completion % Is Calculated</div>
+        <div class="help-desc" style="margin-bottom:8px;">The completion percentage reflects the full path to installation release, not just the engineering package. The engineering and design front end (the ten checkpoints: proposal, plans, PO, camera layout, CAD, submissions, proposal, proposal PO, local review) carries a site to <strong>70%</strong>. From there the back-end field milestones carry it the rest of the way: <strong>Colo Approved &rarr; 78%</strong>, then <strong>Site Walk Complete &rarr; 85%</strong>. After the walk the path branches: a <strong>clean walk</strong> (Walk Result "All Good") goes straight from 85% to <strong>100% on release</strong>; a walk that needs changes follows <strong>CO Submitted &rarr; 92%</strong>, <strong>CO Approved &rarr; 97%</strong>, then <strong>Released &rarr; 100%</strong>.</div>
+        <div class="help-tip">Each back-end milestone advances automatically when its date is entered on the sheet: Colo Approval Date, Site Walk Date, CO Submitted Date, CO Approved Date, and Release to Install Date. The Walk Result column (All Good / CO Submitted / CO Approved) determines which branch a site takes after the walk.</div>
       </div>
 
       <div class="help-section">
