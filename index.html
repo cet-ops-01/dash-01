@@ -185,6 +185,12 @@
   .po-pill{display:inline-block;margin-top:7px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:0.04em;padding:3px 8px;border-radius:5px;text-transform:uppercase;}
   .po-pill.po-yes{color:var(--green);background:rgba(91,209,122,0.1);border:1px solid rgba(91,209,122,0.4);}
   .po-pill.po-sub{color:var(--amber);background:rgba(240,194,60,0.08);border:1px solid rgba(240,194,60,0.35);}
+  .date-line{margin-top:7px;font-family:var(--mono);font-size:10px;color:var(--text-faint);}
+  .date-line b{color:var(--text-dim);font-weight:700;}
+  .date-line .age{color:var(--amber);font-weight:700;}
+  .date-line.block{margin-top:8px;font-size:10.5px;}
+  .date-line.block .age{color:var(--truered);}
+  .date-line.block.colo .age{color:var(--trueyellow);}
   .po-pill.po-no{color:var(--text-faint);background:rgba(124,141,166,0.08);border:1px solid var(--line);}
   .swim{position:relative;padding-top:6px;margin-bottom:4px;}
   .swim-track{display:grid;grid-template-columns:repeat(7,1fr);position:relative;}
@@ -237,7 +243,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.2c</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.3</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -711,16 +717,20 @@ function proposalHTML(d){
   const engPoLabel = d.engPoIssued ? "PO Issued" : d.engSubmitted ? "Submitted — Awaiting PO" : "Not yet submitted";
   const instPoCls = d.instPoIssued ? "po-yes" : d.instSubmitted ? "po-sub" : "po-no";
   const instPoLabel = d.instPoIssued ? "PO Issued" : d.instSubmitted ? "Submitted — Awaiting PO" : "Not yet submitted";
+  const engDates = `<div class="date-line">Submitted: <b>${fmtGateDate(d.dEngSub)}</b>${d.engPoIssued ? ` &nbsp;&bull;&nbsp; PO received: <b>${fmtGateDate(d.dEngPo)}</b>` : d.engSubmitted ? ageTag(d.dEngSub, "awaiting PO") : ""}</div>`;
+  const instDates = `<div class="date-line">Submitted: <b>${fmtGateDate(d.dInstSub)}</b>${d.instPoIssued ? ` &nbsp;&bull;&nbsp; PO received: <b>${fmtGateDate(d.dProjPo)}</b>` : d.instSubmitted ? ageTag(d.dInstSub, "awaiting PO") : ""}</div>`;
   return `<div class="proposals">
       <div class="prop-chip">
         <div class="prop-label">Engineering proposal <span class="prop-hint">(design scope)</span></div>
         <div class="prop-val">${engNum || "Not yet created"}</div>
         <div class="po-pill ${engPoCls}">${engPoLabel}</div>
+        ${engDates}
       </div>
       <div class="prop-chip">
         <div class="prop-label">Installation proposal <span class="prop-hint">(the actual POP build)</span></div>
         <div class="prop-val">${instNum || "Not yet created"}</div>
         <div class="po-pill ${instPoCls}">${instPoLabel}</div>
+        ${instDates}
       </div>
     </div>`;
 }
@@ -755,7 +765,7 @@ function renderList(){
         </div>
       </div>
       ${(d.note||'').toLowerCase().includes('rfi') ? `<div class="rfi-badge"><span class="rfi-dot"></span>RFI Outstanding &mdash; Awaiting Response</div>` : ""}
-      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}</div>`}
+      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}${d.owner==="rfi" ? `<div class="date-line block">RFI sent: <b>${fmtGateDate(d.dRfi)}</b>${ageTag(d.dRfi,"outstanding")}</div>` : ""}${d.owner==="colo" ? `<div class="date-line block colo">Submitted to colo: <b>${fmtGateDate(d.dColoSub)}</b>${ageTag(d.dColoSub,"awaiting sign-off")}</div>` : ""}</div>`}
       ${proposalHTML(d)}
       ${swimHTML(d)}
       ${progressHTML(d)}
@@ -834,7 +844,45 @@ function rowToRaw(f){
     lng: parseFloat(f["Lng"]||f["Longitude"]||"0")||0,
     engM: getMil("Eng"),
     instM: getMil("Inst"),
+    dEngSub:  String(f["ENG Submitted Date"]||"").trim(),
+    dEngPo:   String(f["ENG PO Received Date"]||"").trim(),
+    dRfi:     String(f["RFI / Plans Requested Date"]||"").trim(),
+    dPlans:   String(f["Plans Received Date"]||"").trim(),
+    dInstSub: String(f["Install Submitted Date"]||"").trim(),
+    dProjPo:  String(f["Project PO Received Date"]||"").trim(),
+    dColoSub: String(f["CAD Submitted to Colo Date"]||"").trim(),
+    dColoAppr:String(f["Colo Approval Date"]||"").trim(),
   };
+}
+
+// ---- Date helpers: parse M/D, M/D/YY, M/D/YYYY, or gviz Date(y,m,d); PENDING/blank => null ----
+function parseGateDate(v){
+  const s = String(v||"").trim();
+  if(!s || /pending/i.test(s)) return null;
+  let m = s.match(/^Date\((\d+),(\d+),(\d+)/);
+  if(m) return new Date(+m[1], +m[2], +m[3]);
+  m = s.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/);
+  if(!m) return null;
+  let yr = m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : (new Date()).getFullYear();
+  let dt = new Date(yr, +m[1]-1, +m[2]);
+  if(!m[3] && dt.getTime() > Date.now() + 86400000) dt = new Date(yr-1, +m[1]-1, +m[2]);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+function fmtGateDate(v){
+  const dt = parseGateDate(v);
+  if(dt) return (dt.getMonth()+1) + "/" + dt.getDate();
+  return "PENDING";
+}
+function daysSince(v){
+  const dt = parseGateDate(v);
+  if(!dt) return null;
+  const days = Math.floor((Date.now() - dt.getTime()) / 86400000);
+  return days >= 0 ? days : null;
+}
+function ageTag(v, word){
+  const n = daysSince(v);
+  if(n === null) return "";
+  return ` <span class="age">&mdash; ${n} day${n===1?"":"s"} ${word}</span>`;
 }
 
 function setSourceStatus(mode,when){
