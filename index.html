@@ -186,7 +186,7 @@
   .po-pill.po-yes{color:var(--green);background:rgba(91,209,122,0.1);border:1px solid rgba(91,209,122,0.4);}
   .po-pill.po-sub{color:var(--amber);background:rgba(240,194,60,0.08);border:1px solid rgba(240,194,60,0.35);}
   .rfi-strip{display:block;width:fit-content;margin:10px auto 0 0;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:0.04em;color:var(--truered);background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.4);border-radius:7px;padding:7px 11px;text-align:left;}
-  .rfi-strip .rfi-days{font-size:11.5px;color:#fff;background:var(--truered);border-radius:4px;padding:1px 6px;letter-spacing:0.02em;}
+  .rfi-strip .rfi-days{font-weight:700;color:var(--truered);}
   .date-line{margin-top:7px;font-family:var(--mono);font-size:10px;color:var(--text-faint);}
   .date-line b{color:var(--text-dim);font-weight:700;}
   .date-line .age{color:var(--amber);font-weight:700;}
@@ -245,7 +245,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.3c</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.3e</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -338,7 +338,7 @@
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(220,38,38,0.12);color:#DC2626;border:1px solid rgba(220,38,38,0.4);">RFI Outstanding</span>
-          <div class="help-desc">A Request for Information has been submitted to <strong>CoreWeave</strong>. RFIs are always directed to CoreWeave, not the colo. Engineering design is on hold until CoreWeave responds. <strong>Click the RFI badge on any card to read the exact question on file.</strong></div>
+          <div class="help-desc">A Request for Information has been submitted to <strong>CoreWeave</strong>. RFIs are always directed to CoreWeave, not the colo. Engineering design resumes once the RFI is resolved. <strong>Click the RFI badge on any card to read the exact question on file.</strong></div>
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(22,163,74,0.10);color:#16A34A;border:1px solid rgba(22,163,74,0.4);">With Security 101</span>
@@ -370,8 +370,33 @@
       <div class="help-section">
         <div class="help-section-title">Site Cards</div>
         <div class="help-desc" style="margin-bottom:8px;">Each card represents one POP site. The <strong>colored status badge</strong> (top right) shows who currently holds the action. Below the site name, the <strong>colo facility is shown in cyan</strong> &mdash; this is the specific data center, not a generic label.</div>
-        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the seven-step deployment process: CW Issues Eng PO &rarr; CW Provides Plans &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Walk Outcome (All Good, CO Submitted, or CO Approved). The PO and plans are independent gates &mdash; either can arrive first, and the status badge specifies which is outstanding. The active step is highlighted.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the seven-step deployment process: CW Issues Eng PO &rarr; CW Provides Plans &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Good to Go (Release). Every gate is a traffic light: <span style="color:#16A34A;font-weight:700;">green &#10003;</span> = complete &middot; <span style="color:#EAB308;font-weight:700;">yellow</span> = submitted / awaiting the other party &middot; <span style="color:#DC2626;font-weight:700;">red (pulsing)</span> = blocked by an outstanding RFI &middot; gray = not started. A gate can only turn green when the work behind it is done; yellow always means someone owes a response. The PO and plans are independent gates &mdash; either can arrive first. The ringed node marks where the ball currently sits.</div>
         <div class="help-desc">The <strong>progress bar</strong> reflects completion across 10 internal milestone checkpoints tracked in the program spreadsheet.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">The Final Gate &mdash; Good to Go (Release)</div>
+        <div class="help-desc" style="margin-bottom:8px;">After the local office site walk, the sheet&rsquo;s <strong>Walk Result</strong> column records one of three determinations, and the final gate reacts accordingly:</div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(22,163,74,0.10);color:#16A34A;border:1px solid rgba(22,163,74,0.4);">All Good</span>
+          <div class="help-desc">Walk was clean, no change order. Gate goes <strong>green &#10003;</strong>. Site is GOOD TO GO &mdash; released to the operations team as an active install project.</div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(22,163,74,0.10);color:#16A34A;border:1px solid rgba(22,163,74,0.4);">CO Approved</span>
+          <div class="help-desc">Walk found a delta, a change order was submitted, and CoreWeave <strong>approved</strong> it. Gate goes <strong>green &#10003;</strong> &mdash; released to operations.</div>
+        </div>
+        <div class="help-row">
+          <span class="help-badge" style="background:rgba(234,179,8,0.12);color:#EAB308;border:1px solid rgba(234,179,8,0.4);">CO Submitted</span>
+          <div class="help-desc">Walk found a delta and a change order is <strong>with CoreWeave awaiting approval</strong>. Gate stays <strong>yellow</strong> until they answer.</div>
+        </div>
+        <div class="help-tip">Once the final gate is green, the site is handed off to operations as an active project and <strong>drops off this tracker</strong>. This tracker carries every site from proposal to release &mdash; and no further.</div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">Dates &amp; Aging Counters</div>
+        <div class="help-desc" style="margin-bottom:8px;">Every submission and receipt is dated from the program sheet. Each <strong>proposal chip</strong> shows its Submitted date and, once the PO lands, the PO received date. While a PO is owed, an amber <strong>&ldquo;X days awaiting PO&rdquo;</strong> counter runs automatically.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Sites with an open RFI carry a red chip: <strong style="color:#DC2626;">RFI sent [date]: open N days</strong>. Sites awaiting colo sign-off show <strong style="color:#EAB308;">Submitted to colo [date]: open X days</strong>. Counters recompute on every page load, so the numbers age by themselves.</div>
+        <div class="help-tip"><strong>PENDING</strong> means the date has not been entered in the program sheet yet. The moment the date is entered, the counter appears automatically on the next refresh.</div>
       </div>
 
       <div class="help-section">
@@ -458,7 +483,7 @@ function deriveOwner(d){
   // RFI blocks progress — RFIs go to CoreWeave, not the colo
   if(n.includes("rfi"))
     return {owner:"rfi", swimIdx:1, label:"RFI Outstanding",
-      reason:`An RFI has been submitted to CoreWeave. Engineering design is on hold pending CoreWeave's response.`};
+      reason:`An RFI has been submitted to CoreWeave and is open. Engineering design resumes once the RFI is resolved.`};
 
   // Walk outcome — local office has completed site walk (highest priority after hold)
   const wr = (d.walkResult||"").trim().toLowerCase();
@@ -716,10 +741,10 @@ function rfiStripHTML(d){
   const dt = fmtGateDate(d.dRfi);
   const n = daysSince(d.dRfi);
   if(dt === "PENDING"){
-    return `<div class="rfi-strip">&#9888; RFI OUTSTANDING &mdash; SENT DATE: PENDING</div>`;
+    return `<div class="rfi-strip">RFI open: sent date pending</div>`;
   }
-  const dayTxt = n !== null ? ` &mdash; <span class="rfi-days">${n} DAY${n===1?"":"S"}</span> WITHOUT A RESPONSE` : "";
-  return `<div class="rfi-strip">&#9888; RFI SENT ${dt}${dayTxt}</div>`;
+  const dayTxt = n !== null ? `: <span class="rfi-days">open ${n} day${n===1?"":"s"}</span>` : "";
+  return `<div class="rfi-strip">RFI sent ${dt}${dayTxt}</div>`;
 }
 
 function proposalHTML(d){
@@ -729,8 +754,8 @@ function proposalHTML(d){
   const engPoLabel = d.engPoIssued ? "PO Issued" : d.engSubmitted ? "Submitted — Awaiting PO" : "Not yet submitted";
   const instPoCls = d.instPoIssued ? "po-yes" : d.instSubmitted ? "po-sub" : "po-no";
   const instPoLabel = d.instPoIssued ? "PO Issued" : d.instSubmitted ? "Submitted — Awaiting PO" : "Not yet submitted";
-  const engDates = `<div class="date-line">Submitted: <b>${fmtGateDate(d.dEngSub)}</b>${d.engPoIssued ? ` &nbsp;&bull;&nbsp; PO received: <b>${fmtGateDate(d.dEngPo)}</b>` : d.engSubmitted ? ageTag(d.dEngSub, "awaiting PO") : ""}</div>`;
-  const instDates = `<div class="date-line">Submitted: <b>${fmtGateDate(d.dInstSub)}</b>${d.instPoIssued ? ` &nbsp;&bull;&nbsp; PO received: <b>${fmtGateDate(d.dProjPo)}</b>` : d.instSubmitted ? ageTag(d.dInstSub, "awaiting PO") : ""}</div>`;
+  const engDates = `<div class="date-line">Submitted <b>${fmtGateDate(d.dEngSub)}</b>${d.engPoIssued ? ` &nbsp;&bull;&nbsp; PO received <b>${fmtGateDate(d.dEngPo)}</b>` : d.engSubmitted ? ageTag(d.dEngSub) : ""}</div>`;
+  const instDates = `<div class="date-line">Submitted <b>${fmtGateDate(d.dInstSub)}</b>${d.instPoIssued ? ` &nbsp;&bull;&nbsp; PO received <b>${fmtGateDate(d.dProjPo)}</b>` : d.instSubmitted ? ageTag(d.dInstSub) : ""}</div>`;
   return `<div class="proposals">
       <div class="prop-chip">
         <div class="prop-label">Engineering proposal <span class="prop-hint">(design scope)</span></div>
@@ -777,7 +802,7 @@ function renderList(){
         </div>
       </div>
       ${(d.note||'').toLowerCase().includes('rfi') ? `<div class="rfi-badge"><span class="rfi-dot"></span>RFI Outstanding &mdash; Awaiting Response</div>` : ""}
-      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}${d.owner==="rfi" ? rfiStripHTML(d) : ""}${d.owner==="colo" ? `<div class="date-line block colo">Submitted to colo: <b>${fmtGateDate(d.dColoSub)}</b>${ageTag(d.dColoSub,"awaiting sign-off")}</div>` : ""}</div>`}
+      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}${d.owner==="rfi" ? rfiStripHTML(d) : ""}${d.owner==="colo" ? `<div class="date-line block colo">Submitted to colo <b>${fmtGateDate(d.dColoSub)}</b>${parseGateDate(d.dColoAppr) ? ` &nbsp;&bull;&nbsp; approved <b>${fmtGateDate(d.dColoAppr)}</b>` : ageTag(d.dColoSub)}</div>` : ""}</div>`}
       ${proposalHTML(d)}
       ${swimHTML(d)}
       ${progressHTML(d)}
@@ -891,10 +916,10 @@ function daysSince(v){
   const days = Math.floor((Date.now() - dt.getTime()) / 86400000);
   return days >= 0 ? days : null;
 }
-function ageTag(v, word){
+function ageTag(v){
   const n = daysSince(v);
   if(n === null) return "";
-  return ` <span class="age">&mdash; ${n} day${n===1?"":"s"} ${word}</span>`;
+  return `<span class="age">: open ${n} day${n===1?"":"s"}</span>`;
 }
 
 function setSourceStatus(mode,when){
@@ -1051,7 +1076,7 @@ setTimeout(addTriggers,900);
   // Swap internal How to Use content with CoreWeave-facing version
   const cwHelp = `<div class="help-modal-hdr"><div><h2>How to Use This Tracker</h2><p>A point-in-time snapshot of the Security 101 CoreWeave POP deployment program &mdash; where every site stands and who currently holds the action.</p></div><button class="help-close" onclick="document.getElementById('helpOverlay').classList.remove('open')">&times;</button></div>
 <div class="help-section"><div class="help-section-title">Status Strip</div><div class="help-desc" style="margin-bottom:8px;">The tiles across the top show how many sites are in each state. Click any tile to filter the list. <strong>With CoreWeave</strong> means the next action is on the CoreWeave side (site plans or engineering PO). <strong>With [Colo Name]</strong> means the design is with that facility awaiting sign-off. <strong>RFI Outstanding</strong> means we are waiting on a CoreWeave response to a submitted question. <strong>With Security 101</strong> means our engineering team is actively working the design.</div></div>
-<div class="help-section"><div class="help-section-title">Responding to RFIs</div><div class="help-desc" style="margin-bottom:8px;">Sites with an open RFI display a red <strong>Respond to the RFI for this site</strong> button. Click it to view the question on file and type your response directly. You can also reference supporting files. Responses are added to a queue at the top of the page and sent together.</div></div>
+<div class="help-section"><div class="help-section-title">Gate Colors on Each Site</div><div class="help-desc" style="margin-bottom:8px;">The seven-step lane on every card is a traffic light: <strong style="color:#16A34A;">green &#10003;</strong> = step complete &middot; <strong style="color:#EAB308;">yellow</strong> = submitted and awaiting a response &middot; <strong style="color:#DC2626;">red</strong> = progress is blocked by an outstanding RFI &middot; gray = not yet started. The final gate, <strong>Good to Go (Release)</strong>, turns green when the site walk closes clean (or its change order is approved) and the site is released to installation &mdash; at which point it leaves this tracker.</div></div><div class="help-section"><div class="help-section-title">Dates &amp; Response Times</div><div class="help-desc" style="margin-bottom:8px;">Submission and receipt dates appear on each proposal, and open items carry running day counters &mdash; for example, <strong style="color:#DC2626;">RFI sent [date]: open N days</strong> shows how long each RFI has been open, and amber counters show how long each submitted proposal has been open awaiting a PO. <strong>PENDING</strong> indicates a date not yet recorded.</div></div><div class="help-section"><div class="help-section-title">Responding to RFIs</div><div class="help-desc" style="margin-bottom:8px;">Sites with an open RFI display a red <strong>Respond to the RFI for this site</strong> button. Click it to view the question on file and type your response directly. You can also reference supporting files. Responses are added to a queue at the top of the page and sent together.</div></div>
 <div class="help-section"><div class="help-section-title">Correcting a Colo Assignment</div><div class="help-desc" style="margin-bottom:8px;">Each site shows its colocation facility. If an assignment is wrong, click the yellow <strong>If [Colo] is incorrect, click here</strong> button on that card, select the correct facility from the list, and add it to the queue.</div></div>
 <div class="help-section"><div class="help-section-title">Sending Your Submissions</div><div class="help-desc" style="margin-bottom:8px;">As you queue RFI responses and colo corrections, a summary bar appears at the top of the page. Review your items, remove any you don&rsquo;t need, then click <strong>Send All to CET</strong>. A single email opens addressed to the Security 101 Corporate Engineering Team with everything formatted and ready to send. If you referenced any files, attach them to the email before sending.</div></div>
 <div class="help-section"><div class="help-section-title">Exporting for a Colo</div><div class="help-desc" style="margin-bottom:8px;">Use the <strong>Export snapshot</strong> button to generate a filtered view for a specific colocation provider &mdash; for example, only the Equinix sites. The exported file contains site status only, with no proposal or commercial data, and can be shared directly with the facility.</div></div>
