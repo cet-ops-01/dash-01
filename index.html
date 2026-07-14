@@ -185,6 +185,8 @@
   .po-pill{display:inline-block;margin-top:7px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:0.04em;padding:3px 8px;border-radius:5px;text-transform:uppercase;}
   .po-pill.po-yes{color:var(--green);background:rgba(91,209,122,0.1);border:1px solid rgba(91,209,122,0.4);}
   .po-pill.po-sub{color:var(--amber);background:rgba(240,194,60,0.08);border:1px solid rgba(240,194,60,0.35);}
+  .rfi-strip{margin-top:12px;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:0.05em;color:#fff;background:rgba(220,38,38,0.22);border:1.5px solid var(--truered);border-radius:8px;padding:10px 14px;text-align:center;animation:gatePulseRed 1.5s ease-in-out infinite;}
+  .rfi-strip .rfi-days{font-size:15px;color:var(--truered);background:#fff;border-radius:5px;padding:1px 8px;letter-spacing:0.02em;}
   .date-line{margin-top:7px;font-family:var(--mono);font-size:10px;color:var(--text-faint);}
   .date-line b{color:var(--text-dim);font-weight:700;}
   .date-line .age{color:var(--amber);font-weight:700;}
@@ -243,7 +245,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.3</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.3a</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -710,6 +712,16 @@ function fmtProp(num){
   return s.includes(".") ? s : s + ".0";
 }
 
+function rfiStripHTML(d){
+  const dt = fmtGateDate(d.dRfi);
+  const n = daysSince(d.dRfi);
+  if(dt === "PENDING"){
+    return `<div class="rfi-strip">&#9888; RFI OUTSTANDING &mdash; SENT DATE: PENDING</div>`;
+  }
+  const dayTxt = n !== null ? ` &mdash; <span class="rfi-days">${n} DAY${n===1?"":"S"}</span> WITHOUT A RESPONSE` : "";
+  return `<div class="rfi-strip">&#9888; RFI SENT ${dt}${dayTxt}</div>`;
+}
+
 function proposalHTML(d){
   const engNum = fmtProp(d.eng);
   const instNum = fmtProp(d.po);
@@ -765,7 +777,7 @@ function renderList(){
         </div>
       </div>
       ${(d.note||'').toLowerCase().includes('rfi') ? `<div class="rfi-badge"><span class="rfi-dot"></span>RFI Outstanding &mdash; Awaiting Response</div>` : ""}
-      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}${d.owner==="rfi" ? `<div class="date-line block">RFI sent: <b>${fmtGateDate(d.dRfi)}</b>${ageTag(d.dRfi,"outstanding")}</div>` : ""}${d.owner==="colo" ? `<div class="date-line block colo">Submitted to colo: <b>${fmtGateDate(d.dColoSub)}</b>${ageTag(d.dColoSub,"awaiting sign-off")}</div>` : ""}</div>`}
+      ${d.owner==="hold" ? "" : `<div class="reason">${d.reason}${d.owner==="rfi" ? rfiStripHTML(d) : ""}${d.owner==="colo" ? `<div class="date-line block colo">Submitted to colo: <b>${fmtGateDate(d.dColoSub)}</b>${ageTag(d.dColoSub,"awaiting sign-off")}</div>` : ""}</div>`}
       ${proposalHTML(d)}
       ${swimHTML(d)}
       ${progressHTML(d)}
