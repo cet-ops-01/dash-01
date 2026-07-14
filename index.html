@@ -246,7 +246,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.5</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.5a</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -564,10 +564,14 @@ function computePct(d){
       if(d.instPoIssued) pct = 92;                 // Install PO in hand: cleared to mobilize
       if(has(d.dRelease) && d.instPoIssued) pct = 100;  // Released (requires install PO)
     } else if(wr === "co submitted" || has(d.dCoSub)){
-      pct = 90;                                     // CO submitted to CoreWeave
-      if(wr === "co approved" || has(d.dCoAppr)) pct = 95;   // CO approved / final decision
-      if(d.instPoIssued) pct = Math.max(pct, 97);  // Install PO in hand
-      if(has(d.dRelease) && d.instPoIssued) pct = 100;
+      // CO raised but NOT yet approved. This blocks progression no matter what else is in hand.
+      pct = 90;                                     // CO submitted to CoreWeave, awaiting their approval
+      if(wr === "co approved" || has(d.dCoAppr)){   // CO now approved -> resume toward release
+        pct = 95;
+        if(d.instPoIssued) pct = 97;               // CO approved AND install PO in hand
+        if(has(d.dRelease) && d.instPoIssued) pct = 100;
+      }
+      // If CO is still only submitted, pct stays at 90 regardless of install PO or release date.
     } else if(wr === "co approved" || has(d.dCoAppr)){
       pct = 95;
       if(d.instPoIssued) pct = 97;
@@ -575,6 +579,8 @@ function computePct(d){
     }
     // HARD GATE: a site can never reach 100% without the installation PO issued.
     if(!d.instPoIssued && pct >= 100) pct = 97;
+    // HARD GATE: a site with a submitted-but-unapproved CO can never pass 90%.
+    if((wr === "co submitted" || (has(d.dCoSub) && !has(d.dCoAppr) && wr !== "co approved")) && pct > 90) pct = 90;
   }
   return pct;
 }
