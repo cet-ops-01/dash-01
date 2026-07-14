@@ -246,7 +246,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.4a</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.4b</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -1053,10 +1053,21 @@ function runExport(){
 }
 
 // CoreWeave full snapshot
+function localStamp(ts){
+  // Local date + 24-hour time for filenames: MM-DD-YY_HHMM (e.g. 07-13-26_2146)
+  const p = n => String(n).padStart(2,'0');
+  const mm = p(ts.getMonth()+1);
+  const dd = p(ts.getDate());
+  const yy = p(ts.getFullYear()%100);
+  const hh = p(ts.getHours());
+  const mn = p(ts.getMinutes());
+  return `${mm}-${dd}-${yy}_${hh}${mn}`;
+}
+
 function generateCoreWeaveSnapshot(){
   const ts = new Date();
   const tsLabel = ts.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
-  const dateSlug = ts.toISOString().slice(0,10);
+  const dateSlug = localStamp(ts);
   let snap = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
   snap = snap.replace('const RAW = [];',`const RAW = [];\nconst _SNAP = ${JSON.stringify(DATA)};`);
   snap = snap.replace('let DATA = buildData(RAW);','let DATA = _SNAP;');
@@ -1147,7 +1158,7 @@ function generateColoSnapshot(selectedColos){
   const ts = new Date();
   const tsLabel = ts.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const dateSlug = ts.toISOString().slice(0,10);
+  const dateSlug = localStamp(ts);
   const coloLabel = selectedColos.join(', ');
   const sites = DATA.filter(d=>selectedColos.includes(d.colo) && !d.cancelled);
 
