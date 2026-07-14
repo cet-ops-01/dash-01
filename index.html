@@ -114,7 +114,7 @@
   .source-status.error{color:var(--amber);border-color:rgba(240,194,60,0.4);background:rgba(240,194,60,0.08);}
 
   /* STAT STRIP */
-  .owner-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+  .owner-strip{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px;}
   @media(max-width:1200px){.owner-strip{grid-template-columns:repeat(4,1fr);}}
   @media(max-width:700px){.owner-strip{grid-template-columns:repeat(2,1fr);}}
   .ostat{background:var(--panel);padding:14px 14px;cursor:pointer;position:relative;transition:background .15s ease;border-top:3px solid transparent;}
@@ -196,7 +196,7 @@
   .date-line.block.rfi .age{color:var(--truered);}
   .po-pill.po-no{color:var(--text-faint);background:rgba(124,141,166,0.08);border:1px solid var(--line);}
   .swim{position:relative;padding-top:6px;margin-bottom:4px;}
-  .swim-track{display:grid;grid-template-columns:repeat(7,1fr);position:relative;}
+  .swim-track{display:grid;grid-template-columns:repeat(8,1fr);position:relative;}
   .swim-line{position:absolute;top:13px;left:5%;right:5%;height:2px;background:var(--line);z-index:0;}
   .swim-stop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;}
   .swim-node{width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text-faint);}
@@ -246,7 +246,7 @@
       <div class="sub">For each site: where things stand and who needs to act next.</div>
       <div class="hdr-badges">
         <div id="sourceStatus" class="source-status">Loading&hellip;</div>
-        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.5a</div>
+        <div class="source-status" style="color:var(--blue);border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.07);">v5.6</div>
         <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')">&#9432; How to use</button>
         <button class="help-btn" id="snapBtn" onclick="openExportModal()" style="border-color:rgba(240,194,60,0.35);color:#F0C23C;" title="Export a snapshot for external sharing">&#8659; Export snapshot</button>
       </div>
@@ -371,7 +371,7 @@
       <div class="help-section">
         <div class="help-section-title">Site Cards</div>
         <div class="help-desc" style="margin-bottom:8px;">Each card represents one POP site. The <strong>colored status badge</strong> (top right) shows who currently holds the action. Below the site name, the <strong>colo facility is shown in cyan</strong> &mdash; this is the specific data center, not a generic label.</div>
-        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the seven-step deployment process: CW Issues Eng PO &rarr; CW Provides Plans &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; Good to Go (Release). Every gate is a traffic light: <span style="color:#16A34A;font-weight:700;">green &#10003;</span> = complete &middot; <span style="color:#EAB308;font-weight:700;">yellow</span> = submitted / awaiting the other party &middot; <span style="color:#DC2626;font-weight:700;">red (pulsing)</span> = blocked by an outstanding RFI &middot; gray = not started. A gate can only turn green when the work behind it is done; yellow always means someone owes a response. The PO and plans are independent gates &mdash; either can arrive first. The ringed node marks where the ball currently sits.</div>
+        <div class="help-desc" style="margin-bottom:8px;">Proposal numbers and PO status for both engineering and installation appear below the site info. The <strong>swimlane</strong> at the bottom traces the eight-step deployment process: CW Issues Eng PO &rarr; CW Provides Plans &rarr; S101 CAD &amp; Design &rarr; Submitted to Colo &rarr; Colo Approval &rarr; Local Office Site Walk &rarr; CW Issues Install PO &rarr; Good to Go (Release). The Install PO gate is independent &mdash; the installation PO can arrive at any point in the sequence, but the site cannot release without it. Every gate is a traffic light: <span style="color:#16A34A;font-weight:700;">green &#10003;</span> = complete &middot; <span style="color:#EAB308;font-weight:700;">yellow</span> = submitted / awaiting the other party &middot; <span style="color:#DC2626;font-weight:700;">red (pulsing)</span> = blocked by an outstanding RFI &middot; gray = not started. A gate can only turn green when the work behind it is done; yellow always means someone owes a response. The PO and plans are independent gates &mdash; either can arrive first. The ringed node marks where the ball currently sits.</div>
         <div class="help-desc">The <strong>progress bar</strong> reflects completion across 10 internal milestone checkpoints tracked in the program spreadsheet.</div>
       </div>
 
@@ -380,11 +380,11 @@
         <div class="help-desc" style="margin-bottom:8px;">After the local office site walk, the sheet&rsquo;s <strong>Walk Result</strong> column records one of three determinations, and the final gate reacts accordingly:</div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(22,163,74,0.10);color:#16A34A;border:1px solid rgba(22,163,74,0.4);">All Good</span>
-          <div class="help-desc">Walk was clean, no change order. Gate goes <strong>green &#10003;</strong>. Site is GOOD TO GO &mdash; released to the operations team as an active install project.</div>
+          <div class="help-desc">Walk was clean, no change order. Once the <strong>installation PO</strong> is also in hand, the gate goes <strong>green &#10003;</strong> and the site is GOOD TO GO &mdash; released to the operations team as an active install project. Without the install PO the site holds at &ldquo;Awaiting Install PO.&rdquo;</div>
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(22,163,74,0.10);color:#16A34A;border:1px solid rgba(22,163,74,0.4);">CO Approved</span>
-          <div class="help-desc">Walk found a delta, a change order was submitted, and CoreWeave <strong>approved</strong> it. Gate goes <strong>green &#10003;</strong> &mdash; released to operations.</div>
+          <div class="help-desc">Walk found a delta, a change order was submitted, and CoreWeave <strong>approved</strong> it. With the <strong>installation PO</strong> also in hand, the gate goes <strong>green &#10003;</strong> &mdash; released to operations. An approved CO without the install PO still holds at &ldquo;Awaiting Install PO.&rdquo;</div>
         </div>
         <div class="help-row">
           <span class="help-badge" style="background:rgba(234,179,8,0.12);color:#EAB308;border:1px solid rgba(234,179,8,0.4);">CO Submitted</span>
@@ -467,6 +467,7 @@ const SWIM_STOPS = [
   {key:"s101",      label:"Submitted\nto Colo"},
   {key:"colo",      label:"Colo\nApproval"},
   {key:"s101",      label:"Local Office\nSite Walk"},
+  {key:"coreweave", label:"CW Issues\nInstall PO"},
   {key:"decision",  label:"Good to Go\n(Release)"},
 ];
 
@@ -481,62 +482,82 @@ function deriveOwner(d){
   const n = (d.note||d.holdReason||"").toLowerCase();
   const site = (d.site||"").trim();
   const coloName = COLO_MAP[site] || "Colo";
+  const hasD = x => !!parseGateDate(x);
+  const engRaw = Array.isArray(d.vals) ? d.vals.reduce((a,b)=>a+b,0) : 0;
+  const dataWarn = engRaw < 100 ? " Note: the engineering checkpoints on the sheet are incomplete for this site \u2014 verify sheet data." : "";
 
   // On hold always wins
   if(n.includes("on hold"))
     return {owner:"hold", swimIdx:-1, label:"On hold",
       reason: d.holdReason || d.note || "On hold pending an internal decision before work resumes."};
 
-  // RFI blocks progress — RFIs go to CoreWeave, not the colo
+  // Determine the underlying stage first (ignoring any open RFI), so an RFI
+  // can be shown at the stage where it actually occurred.
+  const underlying = (() => {
+    // Walk outcome — local office has completed site walk
+    const wr = (d.walkResult||"").trim().toLowerCase();
+    if(wr){
+      if(wr==="all good"){
+        if(!d.instPoIssued)
+          return {owner:"coreweave", swimIdx:6, label:"With CoreWeave \u2014 Awaiting Install PO",
+            reason:"Site walk complete and verified as designed. Cleared to mobilize once CoreWeave issues the installation PO. The site cannot be released for installation until that PO is in hand."+dataWarn};
+        return {owner:"install_ready", swimIdx:7, label:"Install Ready",
+          reason:"Site walk complete. All conditions verified as designed. Installation PO issued. Green light for installation."+dataWarn};
+      }
+      if(wr==="co approved"){
+        if(!d.instPoIssued)
+          return {owner:"coreweave", swimIdx:6, label:"With CoreWeave \u2014 Awaiting Install PO",
+            reason:"Change order approved by CoreWeave. Cleared to mobilize once the installation PO is issued to reflect the updated scope. The site cannot be released until that PO is in hand."+dataWarn};
+        return {owner:"install_ready", swimIdx:7, label:"Install Ready \u2014 CO Approved",
+          reason:"Change order approved and installation PO issued. Site is cleared for installation."+dataWarn};
+      }
+      if(wr==="co submitted")
+        return {owner:"coreweave", swimIdx:7, label:"Change Order Submitted",
+          reason:"Site walk identified scope changes. CoreWeave has been notified and the change order has been submitted. Awaiting their approval."+dataWarn};
+    }
+
+    // Release date recorded but no walk result on the sheet — flag, don't guess.
+    if(hasD(d.dRelease))
+      return {owner:"s101", swimIdx:5, label:"With Security 101 \u2014 Verify Data",
+        reason:"A Release to Install date is recorded on the sheet, but no Walk Result has been entered. Confirm the walk outcome (All Good / CO Submitted / CO Approved) so this site can be released correctly."};
+
+    // Waiting for colo sign-off — dates are authoritative, note text is the fallback.
+    if((hasD(d.dColoSub) && !hasD(d.dColoAppr)) ||
+       ((n.includes("waiting for colo") || n.includes("colo approval")) && !hasD(d.dColoAppr)))
+      return {owner:"colo", swimIdx:4, label:`With ${coloName}`,
+        reason:`CAD layout and coverage plan submitted to ${coloName}. Awaiting their sign-off on mounting and placement.`};
+
+    // Colo has approved; walk is the next step.
+    if(hasD(d.dColoAppr))
+      return {owner:"s101", swimIdx:5, label:"With Security 101",
+        reason:"Colo approval received. The local office site walk is the next step before release."};
+
+    // Two independent CoreWeave gates: engineering PO and site plans. Either can arrive first.
+    const plansReceived = Array.isArray(d.vals) && d.vals[1] > 0;
+
+    if(plansReceived && d.engPoIssued)
+      return {owner:"s101", swimIdx:2, label:"With Security 101",
+        reason:"Site plans and engineering PO received. Our team is actively developing the CAD layout and coverage design."};
+
+    if(d.engPoIssued && !plansReceived)
+      return {owner:"coreweave", swimIdx:1, label:"With CoreWeave \u2014 Awaiting Plans",
+        reason:"Engineering PO is in hand. Waiting on CoreWeave to deliver the site plans so design work can begin."};
+
+    if(plansReceived && !d.engPoIssued)
+      return {owner:"coreweave", swimIdx:0, label:"With CoreWeave \u2014 Awaiting PO",
+        reason:"Site plans received. Waiting on CoreWeave to issue the engineering PO so design work can begin."};
+
+    return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
+      reason:"Waiting on CoreWeave for both the engineering PO and site plans. Design work begins once both are in place."};
+  })();
+
+  // RFI blocks progress at whatever stage the site is actually in.
+  // RFIs go to CoreWeave, not the colo.
   if(n.includes("rfi"))
-    return {owner:"rfi", swimIdx:1, label:"RFI Outstanding",
-      reason:`An RFI has been submitted to CoreWeave and is open. Engineering design resumes once the RFI is resolved.`};
+    return {owner:"rfi", swimIdx:Math.max(underlying.swimIdx, 1), label:"RFI Outstanding",
+      reason:"An RFI has been submitted to CoreWeave and is open. Work on this site resumes once the RFI is resolved."};
 
-  // Walk outcome — local office has completed site walk (highest priority after hold)
-  const wr = (d.walkResult||"").trim().toLowerCase();
-  if(wr){
-    if(wr==="all good"){
-      if(!d.instPoIssued)
-        return {owner:"coreweave", swimIdx:6, label:"With CoreWeave \u2014 Awaiting Install PO",
-          reason:"Site walk complete and verified as designed. Cleared to mobilize once CoreWeave issues the installation PO. The site cannot be released for installation until that PO is in hand."};
-      return {owner:"install_ready", swimIdx:6, label:"Install Ready",
-        reason:"Site walk complete. All conditions verified as designed. Installation PO issued. Green light for installation."};
-    }
-    if(wr==="co approved"){
-      if(!d.instPoIssued)
-        return {owner:"coreweave", swimIdx:6, label:"With CoreWeave \u2014 Awaiting Install PO",
-          reason:"Change order approved by CoreWeave. Cleared to mobilize once the installation PO is issued to reflect the updated scope. The site cannot be released until that PO is in hand."};
-      return {owner:"install_ready", swimIdx:6, label:"Install Ready \u2014 CO Approved",
-        reason:"Change order approved and installation PO issued. Site is cleared for installation."};
-    }
-    if(wr==="co submitted")
-      return {owner:"coreweave", swimIdx:6, label:"Change Order Submitted",
-        reason:"Site walk identified scope changes. CoreWeave has been notified and the change order has been submitted. Awaiting their approval."};
-  }
-
-  // Waiting for colo sign-off on CAD / placement
-  if(n.includes("waiting for colo") || n.includes("colo approval"))
-    return {owner:"colo", swimIdx:4, label:`With ${coloName}`,
-      reason:`CAD layout and coverage plan submitted to ${coloName}. Awaiting their sign-off on mounting and placement.`};
-
-  // Two independent CoreWeave gates: engineering PO and site plans. Either can arrive first.
-  const plansReceived = Array.isArray(d.vals) && d.vals[1] > 0;  // vals[1] = "Plans Received"
-
-  if(plansReceived && d.engPoIssued)
-    return {owner:"s101", swimIdx:2, label:"With Security 101",
-      reason:"Site plans and engineering PO received. Our team is actively developing the CAD layout and coverage design."};
-
-  if(d.engPoIssued && !plansReceived)
-    return {owner:"coreweave", swimIdx:1, label:"With CoreWeave \u2014 Awaiting Plans",
-      reason:"Engineering PO is in hand. Waiting on CoreWeave to deliver the site plans so design work can begin."};
-
-  if(plansReceived && !d.engPoIssued)
-    return {owner:"coreweave", swimIdx:0, label:"With CoreWeave \u2014 Awaiting PO",
-      reason:"Site plans received. Waiting on CoreWeave to issue the engineering PO so design work can begin."};
-
-  // Neither in hand
-  return {owner:"coreweave", swimIdx:0, label:"With CoreWeave",
-    reason:"Waiting on CoreWeave for both the engineering PO and site plans. Design work begins once both are in place."};
+  return underlying;
 }
 
 // Compute completion %: engineering front-end scales to 70%, back-end milestones carry 70->100.
@@ -548,7 +569,7 @@ function computePct(d){
   const engPct = Math.round((Math.min(engRaw,100)/100) * 70);            // 0..70
 
   // Back-end milestones. Each is reached when its date is present (or walk result set).
-  const has = v => { const s=String(v||"").trim(); return s && !/pending/i.test(s); };
+  const has = v => !!parseGateDate(v);  // requires a real, parseable date — junk text does not advance milestones
   const wr = (d.walkResult||"").trim().toLowerCase();
 
   // Start from engineering %, then step up as back-end milestones are reached.
@@ -580,7 +601,8 @@ function computePct(d){
     // HARD GATE: a site can never reach 100% without the installation PO issued.
     if(!d.instPoIssued && pct >= 100) pct = 97;
     // HARD GATE: a site with a submitted-but-unapproved CO can never pass 90%.
-    if((wr === "co submitted" || (has(d.dCoSub) && !has(d.dCoAppr) && wr !== "co approved")) && pct > 90) pct = 90;
+    // A walk result of "All Good" or "CO Approved" overrides stale CO dates (re-walked or resolved sites).
+    if((wr === "co submitted" || (has(d.dCoSub) && !has(d.dCoAppr) && wr !== "co approved" && wr !== "all good")) && pct > 90) pct = 90;
   }
   return pct;
 }
@@ -602,7 +624,8 @@ const STAT_DEFS = [
   {key:"coreweave", label:"With CoreWeave",    filter:d=>d.owner==="coreweave" && !d.cancelled},
   {key:"colo",      label:"With Colo",         filter:d=>d.owner==="colo"       && !d.cancelled},
   {key:"rfi",       label:"RFI Outstanding",   filter:d=>d.owner==="rfi"        && !d.cancelled},
-  {key:"s101",      label:"With Security 101", filter:d=>(d.owner==="s101"||d.owner==="install_ready") && !d.cancelled},
+  {key:"s101",      label:"With Security 101", filter:d=>d.owner==="s101" && !d.cancelled},
+  {key:"install_ready", label:"Install Ready",   filter:d=>d.owner==="install_ready" && !d.cancelled},
   {key:"hold",      label:"On hold",           filter:d=>d.owner==="hold"       && !d.cancelled},
   {key:"po",        label:"Has a PO issued",   filter:d=>(d.engPoIssued===true||d.instPoIssued===true) && !d.cancelled},
   {key:"cancelled", label:"Cancelled",         filter:d=>d.cancelled===true},
@@ -659,7 +682,7 @@ function showRfi(site){
 
 let activeColo = null;
 
-function pctCls(p){ return p>=70?"hi":p>=25?"mid":"lo"; }
+function pctCls(p){ return p>=92?"hi":p>=35?"mid":"lo"; }
 
 function renderColoFilters(data){
   const el = document.getElementById('coloFilters');
@@ -752,14 +775,17 @@ function swimHTML(d){
   // g = complete (10) | y = submitted / awaiting the other party (5) | r = blocked, RFI outstanding | "" = not started (0)
   const v = Array.isArray(d.vals) ? d.vals : [0,0,0,0,0,0,0,0,0,0];
   const wrs = (d.walkResult||"").trim().toLowerCase();
+  const hasD = x => !!parseGateDate(x);
+  const coResolved = wrs==="all good" || wrs==="co approved" || !hasD(d.dCoSub) || hasD(d.dCoAppr);
   const GATE = [
     (d.engPoIssued || v[2]===10) ? "g" : (v[2]>0 || d.engSubmitted) ? "y" : "",
     v[1]===10 ? "g" : (d.owner==="rfi") ? "r" : v[1]>0 ? "y" : "",
     (v[3]===10 && v[4]===10 && v[5]===10) ? "g" : (v[3]>0 || v[4]>0 || v[5]>0) ? "y" : "",
-    v[6]>=5 ? "g" : "",
-    v[6]===10 ? "g" : v[6]===5 ? "y" : "",
-    v[9]===10 ? "g" : v[9]>0 ? "y" : "",
-    (wrs==="all good" || wrs==="co approved") ? "g" : wrs==="co submitted" ? "y" : ""
+    (v[6]>=5 || hasD(d.dColoSub)) ? "g" : "",
+    (v[6]===10 || hasD(d.dColoAppr)) ? "g" : (v[6]===5 || hasD(d.dColoSub)) ? "y" : "",
+    (v[9]===10 || hasD(d.dWalk) || wrs) ? "g" : v[9]>0 ? "y" : "",
+    d.instPoIssued ? "g" : d.instSubmitted ? "y" : "",
+    (hasD(d.dRelease) && d.instPoIssued && (wrs==="all good"||wrs==="co approved")) ? "g" : wrs ? "y" : ""
   ];
   const stops = SWIM_STOPS.map((s,i)=>{
     let cls = "swim-stop";
@@ -774,18 +800,22 @@ function swimHTML(d){
   }).join("");
   let branch = "";
   const wrb = (d.walkResult||"").trim().toLowerCase();
-  if(wrb === "all good"){
-    branch = `<div class="branch-note scheduled">&#10003; Walk clean &mdash; no change order. Site is <strong>GOOD TO GO</strong>: released to the operations team as an active install project. It drops off this tracker at handoff.</div>`;
-  } else if(wrb === "co approved"){
-    branch = `<div class="branch-note scheduled">&#10003; Change order approved by CoreWeave. Site is <strong>GOOD TO GO</strong>: released to the operations team as an active install project. It drops off this tracker at handoff.</div>`;
-  } else if(wrb === "co submitted"){
+  if(wrb==="all good"){
+    branch = d.instPoIssued
+      ? `<div class="branch-note scheduled">&#10003; Walk clean &mdash; no change order. Installation PO in hand. Site is <strong>GOOD TO GO</strong>: released to the operations team as an active install project. It drops off this tracker at handoff.</div>`
+      : `<div class="branch-note change">&#10003; Walk clean &mdash; no change order. <strong>Awaiting the installation PO from CoreWeave</strong> before the site can be released to install.</div>`;
+  } else if(wrb==="co approved"){
+    branch = d.instPoIssued
+      ? `<div class="branch-note scheduled">&#10003; Change order approved by CoreWeave. Installation PO in hand. Site is <strong>GOOD TO GO</strong>: released to the operations team as an active install project. It drops off this tracker at handoff.</div>`
+      : `<div class="branch-note change">&#10003; Change order approved by CoreWeave. <strong>Awaiting the installation PO</strong> reflecting the updated scope before the site can be released to install.</div>`;
+  } else if(wrb==="co submitted"){
     branch = `<div class="branch-note change">&#8617; Walk found a delta from scope &mdash; change order submitted to CoreWeave. Awaiting their approval before the site can be released to install.</div>`;
   }
   return `<div class="swim"><div class="swim-track"><div class="swim-line"></div>${stops}</div></div>${branch}`;
 }
 
 function progressHTML(d){
-  const color = d.pct>=70 ? "var(--green)" : d.pct>=30 ? "var(--amber)" : "var(--red)";
+  const color = d.pct>=92 ? "var(--green)" : d.pct>=35 ? "var(--amber)" : "var(--red)";
   return `<div class="progress-row">
       <div class="progress-track"><div class="progress-fill" style="width:${d.pct}%; background:${color}"></div></div>
       <div class="progress-pct">${d.pct}%</div>
@@ -1151,7 +1181,7 @@ setTimeout(addTriggers,900);
 `;
   // Swap internal How to Use content with CoreWeave-facing version
   const cwHelp = `<div class="help-modal-hdr"><div><h2>How to Use This Tracker</h2><p>A point-in-time snapshot of the Security 101 CoreWeave POP deployment program &mdash; where every site stands and who currently holds the action.</p></div><button class="help-close" onclick="document.getElementById('helpOverlay').classList.remove('open')">&times;</button></div>
-<div class="help-section"><div class="help-section-title">Status Strip</div><div class="help-desc" style="margin-bottom:8px;">The tiles across the top show how many sites are in each state. Click any tile to filter the list. <strong>With CoreWeave</strong> means the next action is on the CoreWeave side (site plans or engineering PO). <strong>With [Colo Name]</strong> means the design is with that facility awaiting sign-off. <strong>RFI Outstanding</strong> means we are waiting on a CoreWeave response to a submitted question. <strong>With Security 101</strong> means our engineering team is actively working the design.</div></div>
+<div class="help-section"><div class="help-section-title">Status Strip</div><div class="help-desc" style="margin-bottom:8px;">The tiles across the top show how many sites are in each state. Click any tile to filter the list. <strong>With CoreWeave</strong> means the next action is on the CoreWeave side (site plans, engineering PO, installation PO, or a change order decision). <strong>Install Ready</strong> means the site is fully cleared &mdash; walk complete, any change order approved, installation PO in hand. <strong>With [Colo Name]</strong> means the design is with that facility awaiting sign-off. <strong>RFI Outstanding</strong> means we are waiting on a CoreWeave response to a submitted question. <strong>With Security 101</strong> means our engineering team is actively working the design.</div></div>
 <div class="help-section"><div class="help-section-title">Gate Colors on Each Site</div><div class="help-desc" style="margin-bottom:8px;">The seven-step lane on every card is a traffic light: <strong style="color:#16A34A;">green &#10003;</strong> = step complete &middot; <strong style="color:#EAB308;">yellow</strong> = submitted and awaiting a response &middot; <strong style="color:#DC2626;">red</strong> = progress is blocked by an outstanding RFI &middot; gray = not yet started. The final gate, <strong>Good to Go (Release)</strong>, turns green when the site walk closes clean (or its change order is approved) and the site is released to installation &mdash; at which point it leaves this tracker.</div></div><div class="help-section"><div class="help-section-title">How Completion % Is Calculated</div><div class="help-desc" style="margin-bottom:8px;">The completion percentage reflects the full path to installation release, not just the engineering package. The engineering and design front end (proposal, plans, PO, camera layout, CAD, submissions) carries a site to <strong>70%</strong>. From there the back-end field milestones carry it the rest of the way: <strong>Colo Approved &rarr; 78%</strong>, <strong>Site Walk Complete &rarr; 85%</strong>. After the walk the path branches: a <strong>clean walk</strong> advances to <strong>92% once the installation PO is issued</strong>, then <strong>100% on release</strong>; a walk that needs changes follows <strong>CO Submitted &rarr; 90%</strong>, <strong>CO Approved &rarr; 95%</strong>, <strong>Install PO Issued &rarr; 97%</strong>, then <strong>Released &rarr; 100%</strong>. A site cannot reach 100% or release for installation until the installation PO is issued.</div></div><div class="help-section"><div class="help-section-title">Dates &amp; Response Times</div><div class="help-desc" style="margin-bottom:8px;">Submission and receipt dates appear on each proposal, and open items carry running day counters &mdash; for example, <strong style="color:#DC2626;">RFI sent [date]: open N days</strong> shows how long each RFI has been open, and amber counters show how long each submitted proposal has been open awaiting a PO. Back-end milestones each track a date on the sheet: Colo Submitted / Approved, Site Walk, CO Submitted / Approved, and Release to Install. <strong>PENDING</strong> indicates a date not yet recorded.</div></div><div class="help-section"><div class="help-section-title">Responding to RFIs</div><div class="help-desc" style="margin-bottom:8px;">Sites with an open RFI display a red <strong>Respond to the RFI for this site</strong> button. Click it to view the question on file and type your response directly. You can also reference supporting files. Responses are added to a queue at the top of the page and sent together.</div></div>
 <div class="help-section"><div class="help-section-title">Correcting a Colo Assignment</div><div class="help-desc" style="margin-bottom:8px;">Each site shows its colocation facility. If an assignment is wrong, click the yellow <strong>If [Colo] is incorrect, click here</strong> button on that card, select the correct facility from the list, and add it to the queue.</div></div>
 <div class="help-section"><div class="help-section-title">Sending Your Submissions</div><div class="help-desc" style="margin-bottom:8px;">As you queue RFI responses and colo corrections, a summary bar appears at the top of the page. Review your items, remove any you don&rsquo;t need, then click <strong>Send All to CET</strong>. A single email opens addressed to the Security 101 Corporate Engineering Team with everything formatted and ready to send. If you referenced any files, attach them to the email before sending.</div></div>
